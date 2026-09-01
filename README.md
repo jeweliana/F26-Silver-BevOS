@@ -7,5 +7,5 @@ Team Silver - Fall 2026
   - Yozongu - Phillip De Guzman - Pdegu001@odu.edu
   - AmberBP1 - Amber Ponder - Apond003@odu.edu
   - JFernandes3435 - Julian Fernandes - Jfern015@odu.edu
-  - Mkibry - Matt Kirby - Mkirb007@odu.edu
+  - mkirby29 - Matt Kirby - mkirb007@odu.edu
   - Fee33 - Ryan Fee - rfee001@odu.edu
