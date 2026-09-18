@@ -19,3 +19,78 @@ gradle-app.setting
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+
+# ============================================
+# Python
+# ============================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ============================================
+# Django
+# ============================================
+
+# Local SQLite database
+db.sqlite3
+db.sqlite3-journal
+
+# User-uploaded/generated media
+media/
+
+# Collected static files
+staticfiles/
+
+# Django/Python logs
+*.log
+
+# ============================================
+# Environment / Secrets
+# ============================================
+
+.env
+.env.*
+!.env.example
+
+# ============================================
+# Testing / Coverage
+# ============================================
+
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# ============================================
+# IDEs / Editors
+# ============================================
+
+# VS Code
+.vscode/
+
+# PyCharm / JetBrains
+.idea/
+
+# ============================================
+# Operating System
+# ============================================
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini

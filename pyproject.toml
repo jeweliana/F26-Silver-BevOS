@@ -1,0 +1,26 @@
+[project]
+name = "bevos"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "jfern015", email = "jfern015@odu.edu" }
+]
+requires-python = ">=3.9"
+dependencies = [
+    "django>=4.2.30",
+    "psycopg[binary]>=3.2.13",
+]
+
+[project.scripts]
+bevos = "bevos:main"
+
+[build-system]
+requires = ["uv_build>=0.12.13,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-django>=4.11.1",
+]
