@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Silver-BevOS</title>
+  <link rel="stylesheet" href="./css/styles.css">
+  <script src="./js/api.js" defer></script>
+  <script src="./js/auth.js" defer></script>
+  <script src="./js/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./index.html">Silver·BevOS</a>
+    <nav class="nav">
+      <a href="./index.html" class="active">Home</a>
+      <a href="./pages/deals.html">Deals</a>
+      <a href="./pages/analytics.html">Analytics</a>
+      <a href="./pages/login.html" data-auth-link="login">Log in</a>
+      <a href="#" data-auth-link="logout" hidden>Log out</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>BevOS control room</h1>
+      <p class="muted" id="whoami">Checking session…</p>
+    </section>
+
+    <section class="grid">
+      <a class="card" href="./pages/deals.html">
+        <h2>Deals</h2>
+        <p>Pipeline, stages and deal records served by the Django API.</p>
+      </a>
+      <a class="card" href="./pages/analytics.html">
+        <h2>Analytics</h2>
+        <p>Rollups computed server-side, rendered here as plain markup.</p>
+      </a>
+      <a class="card" href="./pages/login.html">
+        <h2>Accounts</h2>
+        <p>Session login handled by Django, with CSRF protection.</p>
+      </a>
+    </section>
+  </main>
+</body>
+</html>

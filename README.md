@@ -1,11 +1,16 @@
-Team Silver - Fall 2026
+# Silver-BevOS
 
-# Members
+Split into two apps sharing one repo:
 
-  - cstkennedy - Thomas Kennedy - tkennedy@cs.odu.edu
-  - Jeweliana - Jeweliana Beayon - jbeay001@odu.edu
-  - Yozongu - Phillip De Guzman - Pdegu001@odu.edu
-  - AmberBP1 - Amber Ponder - Apond003@odu.edu
-  - JFernandes3435 - Julian Fernandes - Jfern015@odu.edu
-  - mkirby29 - Matt Kirby - mkirb007@odu.edu
-  - Fee33 - Ryan Fee - rfee001@odu.edu
+- `backend/` — Django (API, models, auth, analytics)
+- `frontend/` — plain HTML/CSS/JS, served by Nginx
+
+## Develop
+
+    docker compose up
+    # frontend → http://localhost:8080
+    # API      → http://localhost:8000
+
+Shell access:
+
+    docker compose exec web python manage.py shell
