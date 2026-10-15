@@ -1,3 +1,15 @@
+### Team Silver - Fall 2026
+
+# Members
+
+  - cstkennedy - Thomas Kennedy - tkennedy@cs.odu.edu
+  - Jeweliana - Jeweliana Beayon - jbeay001@odu.edu
+  - Yozongu - Phillip De Guzman - Pdegu001@odu.edu
+  - AmberBP1 - Amber Ponder - Apond003@odu.edu
+  - JFernandes3435 - Julian Fernandes - Jfern015@odu.edu
+  - mkirby29 - Matt Kirby - mkirb007@odu.edu
+  - Fee33 - Ryan Fee - rfee001@odu.edu  
+
 # Silver-BevOS
 
 Split into two apps sharing one repo:
@@ -5,7 +17,7 @@ Split into two apps sharing one repo:
 - `backend/` — Django (API, models, auth, analytics)
 - `frontend/` — plain HTML/CSS/JS, served by Nginx
 
-## Develop
+## Run instruction
 
     docker compose up
     # frontend → http://localhost:8080
@@ -14,3 +26,4 @@ Split into two apps sharing one repo:
 Shell access:
 
     docker compose exec web python manage.py shell
+
