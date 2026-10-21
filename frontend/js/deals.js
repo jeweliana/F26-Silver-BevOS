@@ -1,4 +1,3 @@
-
 let allDeals = [];
 
 // Display deals in HTML table
@@ -23,9 +22,9 @@ function displayDeals(deals) {
         const row = document.createElement("tr");
 
         const values = [
-            deal.id ?? "—",
-            deal.title ?? deal.name ?? "Untitled Deal",
-            deal.customer_name ?? deal.client_name ?? "—",
+            deal.deal_number ?? `#${deal.id}`,
+            deal.deal_name ?? "Untitled Deal",
+            deal.client ?? "—",
             deal.status ?? "Unknown"
         ];
 
@@ -67,11 +66,9 @@ function searchDeals() {
 
     const filteredDeals = allDeals.filter((deal) => {
         const searchableText = [
-            deal.id,
-            deal.title,
-            deal.name,
-            deal.customer_name,
-            deal.client_name,
+            deal.deal_number,
+            deal.deal_name,
+            deal.client,
             deal.status
         ].filter(value => value != null)
          .join(" ")
