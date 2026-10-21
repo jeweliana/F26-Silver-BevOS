@@ -19,7 +19,7 @@ Split into two apps sharing one repo:
 
 ## Run instruction
 
-    docker compose up
+    docker compose up -d --build
     # frontend → http://localhost:8080
     # API      → http://localhost:8000
 
