@@ -1,10 +1,9 @@
-# backend/deals/management/commands/seed_demo.py
+# This script seeds the database with demo data for testing.
+
 from datetime import date
 from decimal import Decimal
-
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
-
 from core.models import Client, Status, Supplier
 from deals.models import (
     CustomerInvoice, CustomerPO, CustomerQuote, Deal, DealActivity, DealNote,
