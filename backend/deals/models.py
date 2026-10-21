@@ -6,6 +6,12 @@ from core.models import Client, Status, Supplier, TimeStampedModel
 
 
 class Deal(TimeStampedModel):
+    """
+    A model representing a deal.
+
+    Args:
+        TimeStampedModel: An abstract base class that provides created_at and updated_at fields.
+    """
     deal_number = models.CharField(max_length=100, unique=True)
     deal_name = models.CharField(max_length=255)
     client = models.ForeignKey(Client, models.PROTECT, related_name="deals")
@@ -26,6 +32,12 @@ class Deal(TimeStampedModel):
 
 
 class ItemType(models.TextChoices):
+    """
+    Enumeration of item types for packaging requirements and specifications.
+    
+    Args:
+        models.TextChoices: A Django class for defining text choices.
+    """
     CARTON = "carton", "Carton"
     END = "end", "End"
     CAN = "can", "Can"
@@ -33,6 +45,12 @@ class ItemType(models.TextChoices):
 
 
 class PackagingRequirement(TimeStampedModel):
+    """
+    A model representing a packaging requirement for a deal.
+
+    Args:
+        TimeStampedModel: An abstract base class that provides created_at and updated_at fields.
+    """
     deal = models.ForeignKey(Deal, models.CASCADE, related_name="packaging_requirements")
     item_type = models.CharField(max_length=30, choices=ItemType.choices)
     specification = models.TextField(blank=True)
@@ -46,6 +64,12 @@ class PackagingRequirement(TimeStampedModel):
 
 
 class Specification(TimeStampedModel):
+    """
+    A model representing a specification for a deal.
+
+    Args:
+        TimeStampedModel: An abstract base class that provides created_at and updated_at fields.
+    """
     deal = models.ForeignKey(Deal, models.CASCADE, related_name="specifications")
     item_type = models.CharField(max_length=30, choices=ItemType.choices)
     spec_name = models.CharField(max_length=200)
@@ -58,6 +82,12 @@ class Specification(TimeStampedModel):
 
 
 class MoneyModel(TimeStampedModel):
+    """
+    An abstract model for monetary fields used in various deal-related models.
+
+    Args:
+        TimeStampedModel: An abstract base class that provides created_at and updated_at fields.
+    """
     total_amount = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
     currency = models.CharField(max_length=3, default="USD")
     status = models.CharField(max_length=50, blank=True)
@@ -68,6 +98,12 @@ class MoneyModel(TimeStampedModel):
 
 
 class CustomerQuote(MoneyModel):
+    """
+    A model representing a customer quote associated with a deal.
+
+    Args:
+        MoneyModel: An abstract model that provides monetary fields.
+    """
     deal = models.ForeignKey(Deal, models.CASCADE, related_name="customer_quotes")
     client = models.ForeignKey(Client, models.PROTECT, related_name="quotes")
     quote_number = models.CharField(max_length=100, unique=True)
@@ -79,6 +115,12 @@ class CustomerQuote(MoneyModel):
 
 
 class CustomerPO(MoneyModel):
+    """
+    A model representing a customer purchase order associated with a deal.
+
+    Args:
+        MoneyModel: An abstract model that provides monetary fields.
+    """
     deal = models.ForeignKey(Deal, models.CASCADE, related_name="customer_pos")
     client = models.ForeignKey(Client, models.PROTECT, related_name="pos")
     po_number = models.CharField(max_length=100, unique=True)
@@ -90,6 +132,12 @@ class CustomerPO(MoneyModel):
 
 
 class CustomerInvoice(MoneyModel):
+    """
+    A model representing a customer invoice associated with a deal.
+
+    Args:
+        MoneyModel: An abstract model that provides monetary fields.
+    """
     deal = models.ForeignKey(Deal, models.CASCADE, related_name="customer_invoices")
     client = models.ForeignKey(Client, models.PROTECT, related_name="invoices")
     invoice_number = models.CharField(max_length=100, unique=True)
@@ -101,6 +149,12 @@ class CustomerInvoice(MoneyModel):
 
 
 class SupplierQuote(MoneyModel):
+    """
+    A model representing a supplier quote associated with a deal.
+
+    Args:
+        MoneyModel: An abstract model that provides monetary fields.
+    """
     deal = models.ForeignKey(Deal, models.CASCADE, related_name="supplier_quotes")
     supplier = models.ForeignKey(Supplier, models.PROTECT, related_name="quotes")
     quote_number = models.CharField(max_length=100)
@@ -117,6 +171,12 @@ class SupplierQuote(MoneyModel):
 
 
 class NicePackagePO(MoneyModel):
+    """
+    A model representing a Nice Package purchase order associated with a deal.
+
+    Args:
+        MoneyModel: An abstract model that provides monetary fields.
+    """
     deal = models.ForeignKey(Deal, models.CASCADE, related_name="supplier_pos")
     supplier = models.ForeignKey(Supplier, models.PROTECT, related_name="pos")
     po_number = models.CharField(max_length=100, unique=True)
@@ -128,6 +188,12 @@ class NicePackagePO(MoneyModel):
 
 
 class SupplierInvoice(MoneyModel):
+    """
+    A model representing a supplier invoice associated with a deal.
+
+    Args:
+        MoneyModel: An abstract model that provides monetary fields.
+    """
     deal = models.ForeignKey(Deal, models.CASCADE, related_name="supplier_invoices")
     supplier = models.ForeignKey(Supplier, models.PROTECT, related_name="invoices")
     invoice_number = models.CharField(max_length=100)
@@ -144,6 +210,12 @@ class SupplierInvoice(MoneyModel):
 
 
 class Document(TimeStampedModel):
+    """
+    A model representing a document associated with a deal.
+
+    Args:
+        TimeStampedModel: An abstract base class that provides created_at and updated_at fields.
+    """
     class ModuleType(models.TextChoices):
         DEAL = "deal", "Deal"
         CLIENT_PO = "client_po", "Client PO"
@@ -173,6 +245,12 @@ class Document(TimeStampedModel):
 
 
 class StatusHistory(models.Model):
+    """
+    A model representing the history of status changes for a deal.
+
+    Args:
+        models.Model: The base class for all Django models.
+    """
     deal = models.ForeignKey(Deal, models.CASCADE, related_name="status_history")
     status = models.ForeignKey(Status, models.PROTECT, related_name="history_entries")
     changed_by = models.ForeignKey(
@@ -188,6 +266,12 @@ class StatusHistory(models.Model):
 
 
 class DealNote(models.Model):
+    """
+    A model representing a note associated with a deal.
+
+    Args:
+        models.Model: The base class for all Django models.
+    """
     deal = models.ForeignKey(Deal, models.CASCADE, related_name="deal_notes")
     note_text = models.TextField()
     created_by = models.ForeignKey(
@@ -202,6 +286,12 @@ class DealNote(models.Model):
 
 
 class DealActivity(models.Model):
+    """
+    A model representing an activity associated with a deal.
+
+    Args:
+        models.Model: The base class for all Django models.
+    """
     deal = models.ForeignKey(Deal, models.CASCADE, related_name="activities")
     activity_type = models.CharField(max_length=100)
     description = models.TextField(blank=True)

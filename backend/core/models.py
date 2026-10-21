@@ -3,6 +3,12 @@ from django.db import models
 
 
 class TimeStampedModel(models.Model):
+    """
+    An abstract base class model that provides self-updating "created" and "modified" fields.
+
+    Args:
+        models.Model: The base class for all Django models.
+    """
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -11,6 +17,12 @@ class TimeStampedModel(models.Model):
 
 
 class Client(TimeStampedModel):
+    """
+    A model representing a client in the system.
+
+    Args:
+        TimeStampedModel: An abstract base class that provides self-updating "created" and "modified" fields.
+    """
     client_name = models.CharField(max_length=200, unique=True)
     contact_name = models.CharField(max_length=200, blank=True)
     email = models.CharField(max_length=320, blank=True)
@@ -29,6 +41,12 @@ class Client(TimeStampedModel):
 
 
 class Supplier(TimeStampedModel):
+    """
+    A model representing a supplier in the system.
+
+    Args:
+        TimeStampedModel: An abstract base class that provides self-updating "created" and "modified" fields.
+    """
     supplier_name = models.CharField(max_length=200, unique=True)
     contact_name = models.CharField(max_length=200, blank=True)
     email = models.CharField(max_length=320, blank=True)
@@ -46,6 +64,12 @@ class Supplier(TimeStampedModel):
 
 
 class Status(TimeStampedModel):
+    """
+    A model representing a status that can be assigned to deals, customer quotes, customer POs, customer invoices, supplier POs, and supplier invoices.
+
+    Args:
+        TimeStampedModel: An abstract base class that provides self-updating "created" and "modified" fields.
+    """
     class Category(models.TextChoices):
         DEAL = "deal", "Deal"
         CUSTOMER_QUOTE = "customer_quote", "Customer Quote"

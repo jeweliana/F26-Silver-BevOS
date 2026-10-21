@@ -9,7 +9,7 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     environment:
       DJANGO_DEBUG: "1"
-      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,backend,0.0.0.0"
+      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,backend,0.0.0.0,*"
       DJANGO_CSRF_TRUSTED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080"
       DB_HOST: db
       DB_PORT: "5432"
