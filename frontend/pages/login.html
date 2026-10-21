@@ -9,16 +9,28 @@
   <script src="../js/auth.js" defer></script>
 </head>
 <body>
-  <header class="topbar">
+  <!-- <header class="topbar">
     <a class="brand" href="../index.html">Silver·BevOS</a>
-  </header>
+  </header> -->
+
+  <div id="nav_container"> 
+    <div class = "nav_content">
+      <h1>BevOS</h1>
+      <h4>OPERATIONS</h4>
+
+      <a href="../index.html"><button> <img class = "icon" src = "../icons/dashboard.svg"> Dashboard</button></a>
+      <a href="../pages/analytics.html"><button> <img class = "icon" src = "../icons/analytics.svg">Analytics</button></a>
+      <a href="../pages/deals.html"><button><img class = "icon" src = "../icons/deals.svg">Deals</button></a>
+      <a href="../pages/login.html"><button style="background-color:rgb(48, 67, 104);"><img class = "icon" src = "../icons/log-in.svg" >Login</button></a>
+    </div>
+    </div>
 
   <main class="container narrow">
     <h1>Log in</h1>
     <form id="login-form" class="stack">
       <label>Username
         <input name="username" autocomplete="username" required>
-      </label>
+      </label> 
       <label>Password
         <input name="password" type="password" autocomplete="current-password" required>
       </label>
