@@ -32,9 +32,49 @@
     </div>
 
   <main class="container">
-    <h1>Deals</h1>
-    <p class="muted" id="deals-status">Loading deals…</p>
-    <ul id="deals-list" class="list"></ul>
+     <section class="hero">
+        <h1>Deals</h1>
+        <p class="muted">
+            Manage and track beverage packaging deals.
+        </p>
+    </section>
+
+    <section class="card">
+
+        <h2>All Deals</h2>
+
+        <input
+            type="search"
+            id="deal-search"
+            placeholder="Search deals..."
+        >
+
+          <p id="deals-status" class="muted">
+              Loading deals...
+          </p>
+
+        <div class="deals-table-wrapper">
+        <table class="deals-table">
+            <thead>
+                <tr>
+                    <th>Deal ID</th>
+                    <th>Deal Name</th>
+                    <th>Customer</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="deals-table-body">
+                <tr>
+                    <td colspan="4">
+                        Loading deals...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+
+    </section>
   </main>
 </body>
 </html>

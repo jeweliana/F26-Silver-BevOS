@@ -196,3 +196,56 @@ button {
   cursor: pointer;
 }
 
+#deal-search {
+    width: 100%;
+    padding: 12px 16px;
+    margin: 20px 0;
+
+    background: var(--white);
+    color: var(--text-primary);
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+}
+
+#deal-search:focus {
+    outline: 2px solid var(--primary-blue);
+    outline-offset: 2px;
+}
+
+/* Deals table */
+.deals-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+}
+
+.deals-table th {
+    padding: 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border);
+}
+
+.deals-table td {
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border);
+}
+
+.deals-table tbody tr:hover {
+    background: var(--background);
+}
+
+/* Allow horizontal scrolling on small screens */
+.deals-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+

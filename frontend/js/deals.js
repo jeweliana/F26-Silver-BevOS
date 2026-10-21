@@ -1,35 +1,92 @@
-// Renders /api/deals/. Expects a JSON array (or { results: [...] }).
-async function loadDeals() {
-  const status = document.getElementById("deals-status");
-  const list = document.getElementById("deals-list");
-  if (!list) return;
 
-  try {
-    const data = await API.get("/deals/");
-    const deals = Array.isArray(data) ? data : data.results || [];
+let allDeals = [];
 
-    if (!deals.length) {
-      status.textContent = "No deals yet.";
-      return;
+// Display deals in HTML table
+function displayDeals(deals) {
+    const tableBody = document.getElementById("deals-table-body");
+
+    tableBody.replaceChildren();
+
+    if (deals.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+
+        cell.colSpan = 4;
+        cell.textContent = "No deals found.";
+
+        row.appendChild(cell);
+        tableBody.appendChild(row);
+        return;
     }
 
-    status.textContent = `${deals.length} deal${deals.length === 1 ? "" : "s"}`;
-    list.replaceChildren(
-      ...deals.map((deal) => {
-        const li = document.createElement("li");
-        li.textContent = deal.title ?? deal.name ?? `Deal #${deal.id}`;
-        if (deal.status) {
-          const tag = document.createElement("span");
-          tag.className = "muted";
-          tag.textContent = ` — ${deal.status}`;
-          li.append(tag);
-        }
-        return li;
-      })
-    );
-  } catch (error) {
-    status.textContent = error.message;
-  }
+    deals.forEach((deal) => {
+        const row = document.createElement("tr");
+
+        const values = [
+            deal.id ?? "—",
+            deal.title ?? deal.name ?? "Untitled Deal",
+            deal.customer_name ?? deal.client_name ?? "—",
+            deal.status ?? "Unknown"
+        ];
+
+        values.forEach((value) => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+        });
+
+        tableBody.appendChild(row);
+    });
 }
 
-document.addEventListener("DOMContentLoaded", loadDeals);
+// Get deals from the Django backend
+async function loadDeals() {
+    const status = document.getElementById("deals-status");
+
+    try {
+        const data = await API.get("/deals/");
+
+        allDeals = Array.isArray(data)
+            ? data
+            : data.results ?? [];
+
+        displayDeals(allDeals);
+
+        status.textContent = `${allDeals.length} deals found`;
+
+    } catch (error) {
+        status.textContent = "Unable to load deals: " + error.message;
+        displayDeals([]);
+    }
+}
+
+// Search for deals as the user types
+function searchDeals() {
+    const search = document.getElementById("deal-search")
+        .value.toLowerCase().trim();
+
+    const filteredDeals = allDeals.filter((deal) => {
+        const searchableText = [
+            deal.id,
+            deal.title,
+            deal.name,
+            deal.customer_name,
+            deal.client_name,
+            deal.status
+        ].filter(value => value != null)
+         .join(" ")
+         .toLowerCase();
+
+        return searchableText.includes(search);
+    });
+
+    displayDeals(filteredDeals);
+}
+
+// Wait for HTML to finish loading
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("deal-search")
+        .addEventListener("input", searchDeals);
+
+    loadDeals();
+});
