@@ -28,10 +28,10 @@ Split into two apps sharing one repo:
 Confirms the stack is up and demo data loaded. Table and column names follow the ERD.
 
 ```bash
-sudo docker compose exec db psql -U bevos -d bevos -c \
+docker compose exec db psql -U bevos -d bevos -c \
   "select username, email, role, full_name from accounts_user;"
 
-sudo docker compose exec db psql -U bevos -d bevos -c \
+docker compose exec db psql -U bevos -d bevos -c \
   "select (select count(*) from deals) deals, (select count(*) from statuses) statuses;"
 ```
 
