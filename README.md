@@ -22,6 +22,7 @@ Split into two apps sharing one repo:
     docker compose up -d --build
     # frontend → http://localhost:8080
     # API      → http://localhost:8000
+    # Database end point → http://localhost:5432
 
 ## Quick database check
 
