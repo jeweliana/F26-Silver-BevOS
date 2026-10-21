@@ -11,6 +11,11 @@ services:
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,backend,0.0.0.0"
       DJANGO_CSRF_TRUSTED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080"
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: bevos
+      DB_USER: bevos
+      DB_PASSWORD: bevos
     ports:
       - "8000:8000"
     healthcheck:
@@ -24,6 +29,9 @@ services:
       retries: 5
       start_period: 20s
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend:
     build:
@@ -42,24 +50,32 @@ services:
       context: .
       dockerfile: Dockerfile
     image: silver-bevos-backend:dev
-    command: python manage.py migrate --noinput
+    command: sh -c "python manage.py migrate --noinput && python manage.py seed_demo"
     environment:
       DJANGO_DEBUG: "1"
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: bevos
+      DB_USER: bevos
+      DB_PASSWORD: bevos
     restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
 
-  # db:
-  #   image: postgres:16-alpine
-  #   environment:
-  #     POSTGRES_DB: bevos
-  #     POSTGRES_USER: bevos
-  #     POSTGRES_PASSWORD: bevos
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U bevos"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bevos
+      POSTGRES_USER: bevos
+      POSTGRES_PASSWORD: bevos
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bevos"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-# volumes:
-#   pgdata:
+volumes:
+  pgdata:
