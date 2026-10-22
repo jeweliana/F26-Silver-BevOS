@@ -21,4 +21,5 @@ from core.views import home
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("deals.urls")),
+    path("api/analytics/", include("analytics.urls")),
 ]
