@@ -14,7 +14,15 @@ async function loadAnalytics() {
         const dt = document.createElement("dt");
         const dd = document.createElement("dd");
         dt.textContent = key.replace(/_/g, " ");
-        dd.textContent = typeof value === "number" ? value.toLocaleString() : String(value);
+        if (typeof value === "number") {
+          dd.textContent = value.toLocaleString();
+        } else if (value && typeof value === "object") {
+          dd.textContent = Object.entries(value)
+          .map(([k, v]) => k + ": " + v)
+          .join(", ");
+        } else {
+          dd.textContent = String(value);
+        }
         wrap.append(dt, dd);
         return wrap;
       })
