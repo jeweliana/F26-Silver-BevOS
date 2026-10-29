@@ -172,9 +172,44 @@ h1 { margin: 0 0 .5rem; }
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--panel);
+  transition: background 0.15s ease;
 }
-.metrics dt { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; }
+.metrics > div:hover { 
+  background: var(--background);
+}
+.metrics dt {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.metric-icon {
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+.metric-icon.tone-pos { color: var(--success); }
+.metric-icon.tone-neg { color: var(--error); }
 .metrics dd { margin: .25rem 0 0; font-size: 1.6rem; font-weight: 700; }
+.metrics dd.breakdown {
+  font-size: 0.95rem;
+  font-weight: 400;
+  margin-top: 0.5rem;
+}
+.metrics dd.breakdown > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.metrics dd.breakdown > div:last-child {
+  border-bottom: none;
+}
+.metrics dd.breakdown span:last-child {
+  color: var(--text-secondary);
+}
 
 .stack { display: grid; gap: 1rem; }
 label { display: grid; gap: .35rem; font-size: .9rem; color: var(--muted); }
