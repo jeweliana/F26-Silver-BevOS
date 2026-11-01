@@ -13,21 +13,23 @@ async function currentUser() {
 function wireAuthLinks() {
   const loginLink = document.querySelector('[data-auth-link="login"]');
   const logoutLink = document.querySelector('[data-auth-link="logout"]');
-  if (!loginLink || !logoutLink) return;
 
-  logoutLink.addEventListener("click", async (event) => {
-    event.preventDefault();
-    try {
-      await API.post("/auth/logout/");
-    } finally {
-      window.location.href = "./login.html";
-    }
-  });
+  if (logoutLink) {
+    logoutLink.addEventListener("click", async (event) => {
+      event.preventDefault();
+      try {
+        await API.post("/auth/logout/");
+      } finally {
+        window.location.href = "/pages/login.html";
+      }
+    });
+  }
 
   currentUser().then((user) => {
     const authed = Boolean(user && user.is_authenticated);
-    loginLink.hidden = authed;
-    logoutLink.hidden = !authed;
+
+    if (loginLink) loginLink.hidden = authed;
+    if (logoutLink) logoutLink.hidden = !authed;
 
     const whoami = document.getElementById("whoami");
     if (whoami) {
@@ -59,7 +61,8 @@ function wireLoginForm() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await currentUser(); // Ensure session is loaded before wiring links
   wireAuthLinks();
   wireLoginForm();
 });
