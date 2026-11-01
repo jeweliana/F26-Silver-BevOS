@@ -1,3 +1,4 @@
+from __future__ import annotations
 from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.core import validators
@@ -9,7 +10,6 @@ from django.contrib.auth import authenticate, get_user_model
 from .models import User, Organization
 import logging
 from typing import Optional, Iterable
-from __future__ import annotations
 
 logger = logging.getLogger(__name__)
 
