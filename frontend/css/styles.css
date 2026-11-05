@@ -231,6 +231,50 @@ button {
   cursor: pointer;
 }
 
+/* Login page */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 4rem);
+  padding: 2rem;
+}
+.login-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 3rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.login-header {
+  text-align: center;
+  margin-bottom:1.75rem;
+}
+.login-icon {
+width: 52px;
+height: 52px;
+border-radius: 14px;
+background: var(--background);
+display: inline-flex;
+align-items:center;
+justify-content: center;
+margin-bottom: 0.75rem;
+}
+.login-icon i {
+  font-size: 24px;
+  color: var(--primary-blue);
+}
+.login-header h1 {
+  font-size: 1.3rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+.login-header .muted {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
 #deal-search {
     width: 100%;
     padding: 12px 16px;
