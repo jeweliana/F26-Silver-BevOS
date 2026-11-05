@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Log in · Silver-BevOS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="../css/styles.css">
   <script src="../js/api.js" defer></script>
   <script src="../js/auth.js" defer></script>
@@ -25,18 +26,24 @@
     </div>
     </div>
 
-  <main class="container narrow">
-    <h1>Log in</h1>
-    <form id="login-form" class="stack">
-      <label>Username
-        <input name="username" autocomplete="username" required>
-      </label> 
-      <label>Password
-        <input name="password" type="password" autocomplete="current-password" required>
-      </label>
-      <button type="submit">Log in</button>
-      <p id="login-error" class="error" role="alert" hidden></p>
-    </form>
+  <main class="container login-page">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-icon"><i class="ti ti-lock"></i></div>
+        <h1>Welcome back</h1>
+        <p class="muted">Sign in to your BevOS account</p>
+      </div>
+      <form id="login-form" class="stack">
+        <label>Username
+          <input name="username" autocomplete="username" required>
+        </label>
+        <label>Password
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit">Log In</button>
+        <p id="login-error" class="error" role="alert" hidden></p>
+      </form>
+    </div>
   </main>
 </body>
 </html>
