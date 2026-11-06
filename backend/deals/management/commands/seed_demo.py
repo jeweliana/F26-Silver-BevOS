@@ -14,6 +14,8 @@ from deals.models import (
 USERS = [
     ("phillip.d", "Phillip D", "phillip@test", "admin"),
     ("admin", "Admin User", "admin", "admin"),
+    ("manager", "Manager User", "manager", "manager"),
+    ("staff", "Staff User", "staff", "staff"),
     ("alex.morgan", "Alex Morgan", "alex.morgan@example.test", "admin"),
     ("jordan.lee", "Jordan Lee", "jordan.lee@example.test", "manager"),
     ("taylor.reed", "Taylor Reed", "taylor.reed@example.test", "staff"),
