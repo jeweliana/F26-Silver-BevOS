@@ -1,80 +1,94 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Deals · Silver-BevOS</title>
-  <link rel="stylesheet" href="../css/styles.css">
-  <script src="../js/api.js" defer></script>
-  <script src="../js/auth.js" defer></script>
-  <script src="../js/deals.js" defer></script>
-</head>
-<body>
-  <header class="topbar">
-    <!-- <a class="brand" href="../index.html">Silver·BevOS</a>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deals · Silver-BevOS</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <script src="../js/api.js" defer></script>
+    <script src="../js/auth.js" defer></script>
+    <script src="../js/deals.js" defer></script>
+    <script src="../js/protect.js" defer></script>
+    <script src="../js/app.js" defer></script>
+  </head>
+  <body>
+    <div id="app" hidden>
+      <header class="topbar">
+        <!-- <a class="brand" href="../index.html">Silver·BevOS</a>
     <nav class="nav">
       <a href="../index.html">Home</a>
       <a href="./deals.html" class="active">Deals</a>
       <a href="./analytics.html">Analytics</a>
     </nav> -->
-  </header>
+      </header>
 
-  <div id="nav_container"> 
-    <div class = "nav_content">
-      <h1>BevOS</h1>
-      <h4>OPERATIONS</h4>
+      <div id="nav_container">
+        <div class="nav_content">
+          <h1>BevOS</h1>
+          <h4>OPERATIONS</h4>
 
-      <a href="../index.html"><button> <img class = "icon" src = "../icons/dashboard.svg"> Dashboard</button></a>
-      <a href="../pages/analytics.html"><button> <img class = "icon" src = "../icons/analytics.svg">Analytics</button></a>
-      <a href="../pages/deals.html"><button style="background-color:rgb(48, 67, 104);" ><img class = "icon" src = "../icons/deals.svg">Deals</button></a>
-      <a href="../pages/login.html"><button><img class = "icon" src = "../icons/log-in.svg">Login</button></a>
-    </div>
-    </div>
-
-  <main class="container">
-     <section class="hero">
-        <h1>Deals</h1>
-        <p class="muted">
-            Manage and track beverage packaging deals.
-        </p>
-    </section>
-
-    <section class="card">
-
-        <h2>All Deals</h2>
-
-        <input
-            type="search"
-            id="deal-search"
-            placeholder="Search deals..."
-        >
-
-          <p id="deals-status" class="muted">
-              Loading deals...
-          </p>
-
-        <div class="deals-table-wrapper">
-        <table class="deals-table">
-            <thead>
-                <tr>
-                    <th>Deal ID</th>
-                    <th>Deal Name</th>
-                    <th>Customer</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-
-            <tbody id="deals-table-body">
-                <tr>
-                    <td colspan="4">
-                        Loading deals...
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+          <a href="../index.html"
+            ><button>
+              <img class="icon" src="../icons/dashboard.svg" /> Dashboard
+            </button></a
+          >
+          <a href="../pages/analytics.html"
+            ><button>
+              <img class="icon" src="../icons/analytics.svg" />Analytics
+            </button></a
+          >
+          <a href="../pages/deals.html"
+            ><button style="background-color: rgb(48, 67, 104)">
+              <img class="icon" src="../icons/deals.svg" />Deals
+            </button></a
+          >
+          <a href="../pages/admin.html" id="admin-link" hidden>
+            <button>
+              <img class="icon" src="../icons/admin.svg" />
+              Administration
+            </button>
+          </a>
+          <a href="#" data-auth-link="logout" hidden
+            ><button>
+              <img class="icon" src="../icons/log-in.svg" />Logout
+            </button></a
+          >
         </div>
+      </div>
 
-    </section>
-  </main>
-</body>
+      <main class="container">
+        <section class="hero">
+          <h1>Deals</h1>
+          <p class="muted">Manage and track beverage packaging deals.</p>
+        </section>
+
+        <section class="card">
+          <h2>All Deals</h2>
+
+          <input type="search" id="deal-search" placeholder="Search deals..." />
+
+          <p id="deals-status" class="muted">Loading deals...</p>
+
+          <div class="deals-table-wrapper">
+            <table class="deals-table">
+              <thead>
+                <tr>
+                  <th>Deal ID</th>
+                  <th>Deal Name</th>
+                  <th>Customer</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+
+              <tbody id="deals-table-body">
+                <tr>
+                  <td colspan="4">Loading deals...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
 </html>

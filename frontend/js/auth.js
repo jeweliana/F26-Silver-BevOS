@@ -65,4 +65,49 @@ document.addEventListener("DOMContentLoaded", async () => {
   await currentUser(); // Ensure session is loaded before wiring links
   wireAuthLinks();
   wireLoginForm();
+  displayAuthMessage();
 });
+
+async function protectPage() {
+    const user = await currentUser();
+
+    if (!user || !user.is_authenticated) {
+        const currentPage = window.location.pathname;
+
+        const loginURL = new URL("/pages/login.html", window.location.origin);
+
+        loginURL.searchParams.set("message", "unauthorized");
+        loginURL.searchParams.set("next", currentPage);
+
+        window.location.replace(loginURL.toString());
+        return false;
+    }
+
+    // Reveal the page only after authentication succeeds
+    const app = document.getElementById("app");
+
+    if (app) {
+        app.hidden = false;
+    }
+
+    return true;
+}
+
+function displayAuthMessage() {
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get("message");
+    const messageEl = document.getElementById("auth-message");
+
+    // Keep the message hidden by default
+    if (!messageEl) return;
+
+    messageEl.hidden = true;
+
+    if (message === "unauthorized") {
+        messageEl.textContent =
+            "Please log in to access this page.";
+
+        messageEl.className = "auth-warning";
+        messageEl.hidden = false;
+    }
+}
