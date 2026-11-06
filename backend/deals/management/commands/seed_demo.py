@@ -12,6 +12,8 @@ from deals.models import (
 )
 
 USERS = [
+    ("phillip.d", "Phillip D", "phillip@test", "admin"),
+    ("admin", "Admin User", "admin", "admin"),
     ("alex.morgan", "Alex Morgan", "alex.morgan@example.test", "admin"),
     ("jordan.lee", "Jordan Lee", "jordan.lee@example.test", "manager"),
     ("taylor.reed", "Taylor Reed", "taylor.reed@example.test", "staff"),
@@ -92,7 +94,7 @@ class Command(BaseCommand):
                 defaults={"email": email, "is_staff": role == "admin",
                           "is_superuser": role == "admin"},
             )
-            user.set_password(f"{username}-demo-123")
+            user.set_password("12345678")
             user.save()
             users.append(user)
             if made:
