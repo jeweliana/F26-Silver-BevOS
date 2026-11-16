@@ -130,6 +130,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_ROOT = Path(os.environ.get("DJANGO_BASE_DIR", BASE_DIR / "media"))
+
+DOCUMENT_MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+DOCUMENT_ALLOWED_EXTENSIONS = {
+    ".pdf",
+    ".doc", ".docx",
+    ".xls", ".xlsx", ".csv",
+    ".png", ".jpg", ".jpeg",
+    ".txt",
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

@@ -18,6 +18,8 @@ services:
       DB_PASSWORD: bevos
     ports:
       - "8000:8000"
+    volumes:
+      - media:/app/media
     healthcheck:
       test:
         - CMD
@@ -79,3 +81,4 @@ services:
 
 volumes:
   pgdata:
+  media:
