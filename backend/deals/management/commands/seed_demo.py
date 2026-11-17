@@ -40,7 +40,7 @@ SUPPLIERS = [
 ]
 
 CATEGORIES = {
-    "deal": ["Draft", "In Progress", "Completed"],
+    "deal": ["Draft", "In Progress", "Completed", "Cancelled"],
     "customer_quote": ["Quote Draft", "Quote Sent", "Quote Accepted"],
     "customer_po": ["Customer PO Open", "Customer PO Confirmed", "Customer PO Fulfilled"],
     "customer_invoice": ["Customer Invoice Draft", "Customer Invoice Issued",

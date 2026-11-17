@@ -67,6 +67,35 @@
 
           <input type="search" id="deal-search" placeholder="Search deals..." />
 
+          <!-- Edit Deal Panel -->
+
+          <section id="edit-deal-panel" class="card" hidden>
+            <h2>Edit Deal</h2>
+
+            <form id="edit-deal-form">
+              <input type="hidden" id="edit-deal-id" />
+
+              <label>Deal Name</label>
+              <input type="text" id="edit-deal-name" required />
+
+              <label for="edit-deal-client">Customer</label>
+              <select id="edit-deal-client" required>
+                <option value="">Select a customer</option>
+              </select>
+
+              <label for="edit-deal-status">Status</label>
+              <select id="edit-deal-status" required>
+                <option value="Pending">Pending</option>
+                <option value="Active">Active</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+
+              <button type="submit">Save Changes</button>
+              <button type="button" id="cancel-edit">Cancel</button>
+            </form>
+          </section>
+
           <p id="deals-status" class="muted">Loading deals...</p>
 
           <div class="deals-table-wrapper">
@@ -77,12 +106,13 @@
                   <th>Deal Name</th>
                   <th>Customer</th>
                   <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
 
               <tbody id="deals-table-body">
                 <tr>
-                  <td colspan="4">Loading deals...</td>
+                  <td colspan="5">Loading deals...</td>
                 </tr>
               </tbody>
             </table>
