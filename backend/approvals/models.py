@@ -34,6 +34,12 @@ class ApprovalRequest(models.Model):
         related_name="requested_approvals",
     )
 
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="assigned_approvals",
+    )
+
     status = models.CharField(
         max_length=20,
         choices=Status.choices,

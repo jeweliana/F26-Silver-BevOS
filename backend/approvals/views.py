@@ -6,7 +6,7 @@ from .models import ApprovalRequest
 
 @login_required
 def approval_list(request):
-    if request.method == "GET":
+    if request.method != "GET":
         return JsonResponse(
             {"error": "Method not allowed"},
             status=405,
