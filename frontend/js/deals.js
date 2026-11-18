@@ -3,6 +3,7 @@ let allClients = [];
 let allStatuses = [];
 let selectedDealId = null;
 let selectedDeal = null;
+let isEditingDeal = false;
 
 function createElement(tag, className, text) {
     const element = document.createElement(tag);
@@ -100,7 +101,7 @@ async function loadDeals() {
             ? data
             : data.results ?? [];
 
-        displayDeals(allDeals);
+        searchDeals();
 
         status.textContent = `${allDeals.length} deals found`;
 
@@ -133,12 +134,9 @@ function searchDeals() {
     displayDeals(filteredDeals);
 }
 
-
-
 document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.getElementById("deals-table-body");
     const panel = document.getElementById("deal-details-panel");
-    const editForm = document.getElementById("edit-deal-form");
 
     // Search
     document.getElementById("deal-search")
@@ -158,50 +156,27 @@ document.addEventListener("DOMContentLoaded", () => {
             panel.hidden = true;
             selectedDealId = null;
             selectedDeal = null;
+            isEditingDeal = false;
         });
 
     // Enter edit mode
     document.getElementById("edit-deal-button")
-        .addEventListener("click", openEditMode);
+        .addEventListener("click", () => {
+            if (!selectedDeal) return;
+
+            isEditingDeal = true;
+            renderDealDetails(selectedDeal);
+        });
 
     // Save changes
-    editForm.addEventListener("submit", async event => {
-        event.preventDefault();
-
-        const dealId = document.getElementById("edit-deal-id").value;
-
-        const updatedDeal = {
-            deal_name: document.getElementById("edit-deal-name").value.trim(),
-            client: Number(document.getElementById("edit-deal-client").value),
-            status: Number(document.getElementById("edit-deal-status").value)
-        };
-
-        try {
-            await API.patch(`/deals/${dealId}/`, updatedDeal);
-
-            await loadDeals();
-            await loadDealDetails(dealId);
-
-            editForm.reset();
-
-            alert("Deal updated successfully!");
-
-        } catch (error) {
-            console.error("Update failed:", error);
-            alert("Unable to update deal: " + error.message);
-        }
-    });
+    document.getElementById("save-deal-button")
+        .addEventListener("click", saveDealChanges);
 
     // Cancel editing
     document.getElementById("cancel-edit")
         .addEventListener("click", () => {
-            const content = document.getElementById("deal-details-content");
-
-            editForm.reset();
-            editForm.hidden = true;
-            content.hidden = false;
-
-            document.getElementById("edit-deal-button").hidden = false;
+            isEditingDeal = false;
+            renderDealDetails(selectedDeal);
         });
 
     // Initial load
@@ -222,57 +197,26 @@ async function loadClients() {
     allClients = Array.isArray(data)
         ? data
         : data.results ?? [];
-
-    const select = document.getElementById("edit-deal-client");
-
-    select.replaceChildren();
-
-    const placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.textContent = "Select a customer";
-    select.appendChild(placeholder);
-
-    allClients.forEach((client) => {
-        const option = document.createElement("option");
-
-        option.value = client.id;
-        option.textContent = client.client_name;
-
-        select.appendChild(option);
-    });
 }
 
 async function loadStatuses() {
     const data = await API.get("/statuses/");
-    const statuses = Array.isArray(data) ? data : data.results ?? [];
 
-    const select = document.getElementById("edit-deal-status");
-    select.replaceChildren();
-
-    const placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.textContent = "Select a status";
-    select.appendChild(placeholder);
-
-    statuses.forEach((status) => {
-        const option = document.createElement("option");
-        option.value = status.id;
-        option.textContent = status.status_name;
-        select.appendChild(option);
-    });
+    allStatuses = Array.isArray(data)
+        ? data
+        : data.results ?? [];
 }
 
 async function loadDealDetails(dealId) {
     const panel = document.getElementById("deal-details-panel");
     const content = document.getElementById("deal-details-content");
-    const editForm = document.getElementById("edit-deal-form");
     const editButton = document.getElementById("edit-deal-button");
 
     selectedDealId = dealId;
+    isEditingDeal = false;
 
     panel.hidden = false;
     content.hidden = false;
-    editForm.hidden = true;
     editButton.hidden = false;
 
     content.replaceChildren(
@@ -308,44 +252,13 @@ function renderDealDetails(deal) {
 
     content.replaceChildren();
 
-    // Main deal summary
-    const summary = createElement("div", "deal-summary");
-
-    summary.appendChild(
-        createElement("h2", null, deal.deal_name)
-    );
-
-    const summaryTable = createElement("table", "deal-data-table");
-    const summaryBody = document.createElement("tbody");
-
-    const summaryFields = {
-        "Deal Number": deal.deal_number,
-        "Customer": deal.client,
-        "Status": deal.status,
-        "Target Date": deal.target_date,
-        "Created By": deal.created_by,
-        "Created At": deal.created_at,
-        "Last Updated": deal.updated_at,
-        "Notes": deal.notes
-    };
-
-    Object.entries(summaryFields).forEach(([label, value]) => {
-        const row = document.createElement("tr");
-
-        row.append(
-            createElement("th", null, label),
-            createElement("td", null, formatValue(value))
-        );
-
-        summaryBody.appendChild(row);
-    });
-
-    summaryTable.appendChild(summaryBody);
-    summary.appendChild(summaryTable);
-    content.appendChild(summary);
-
     // Define tabs and their corresponding API fields
     const sections = [
+        {
+            id: "deal-info",
+            title: "Deal Information",
+            type: "details"
+        },
         {
             id: "packaging",
             title: "Packaging Requirements",
@@ -412,7 +325,11 @@ function renderDealDetails(deal) {
     const tabBar = createElement("div", "deal-tabs");
 
     sections.forEach((section, index) => {
-        const button = createElement("button", "deal-tab", section.title);
+        const button = createElement(
+            "button",
+            "deal-tab",
+            section.title
+        );
 
         button.type = "button";
         button.dataset.tab = section.id;
@@ -435,15 +352,24 @@ function renderDealDetails(deal) {
         panel.dataset.panel = section.id;
         panel.hidden = index !== 0;
 
-        addCollectionTable(
-            panel,
-            deal[section.key] ?? []
-        );
+        if (section.type === "details") {
+            addDealInformation(panel, deal);
+        } else {
+            addCollectionTable(
+                panel,
+                deal[section.key] ?? []
+            );
+        }
 
         tabContent.appendChild(panel);
     });
 
     content.appendChild(tabContent);
+
+    // Update edit buttons
+    document.getElementById("edit-deal-button").hidden = isEditingDeal;
+    document.getElementById("save-deal-button").hidden = !isEditingDeal;
+    document.getElementById("cancel-edit").hidden = !isEditingDeal;
 
     // Tab switching
     tabBar.addEventListener("click", event => {
@@ -467,35 +393,158 @@ function renderDealDetails(deal) {
 }
 
 
-// Deal information table
 function addDealInformation(container, deal) {
-    const fields = {
-        "Deal Number": deal.deal_number,
-        "Deal Name": deal.deal_name,
-        "Customer": deal.client,
-        "Status": deal.status,
-        "Target Date": deal.target_date,
-        "Created By": deal.created_by,
-        "Created At": deal.created_at,
-        "Last Updated": deal.updated_at,
-        "Notes": deal.notes
-    };
+    const fields = [
+        ["Deal Number", deal.deal_number, false],
+        ["Deal Name", deal.deal_name, true],
+        ["Customer", deal.client, true, "client"],
+        ["Status", deal.status, true, "status"],
+        ["Target Date", deal.target_date, true, "date"],
+        ["Created By", deal.created_by, false],
+        ["Created At", deal.created_at, false],
+        ["Last Updated", deal.updated_at, false],
+        ["Notes", deal.notes, true, "textarea"]
+    ];
 
     const table = createElement("table", "deal-data-table");
     const tbody = document.createElement("tbody");
 
-    Object.entries(fields).forEach(([label, value]) => {
+    fields.forEach(([label, value, editable, type]) => {
         const row = document.createElement("tr");
 
-        const heading = createElement("th", null, label);
-        const cell = createElement("td", null, formatValue(value));
+        row.appendChild(createElement("th", null, label));
 
-        row.append(heading, cell);
+        const cell = document.createElement("td");
+
+        if (isEditingDeal && editable) {
+            let input;
+
+            if (type === "client" || type === "status") {
+                input = document.createElement("select");
+                const placeholder = document.createElement("option");
+                placeholder.value = "";
+                placeholder.textContent = "Select an option";
+                placeholder.disabled = true;
+                placeholder.selected = true;
+
+                input.appendChild(placeholder);
+                const options = type === "client"
+                    ? allClients.map(item => ({
+                        id: item.id,
+                        name: item.client_name
+                    }))
+                    : allStatuses.map(item => ({
+                        id: item.id,
+                        name: item.status_name
+                    }));
+
+                options.forEach(optionData => {
+                    const option = document.createElement("option");
+                    option.value = optionData.id;
+                    option.textContent = optionData.name;
+                    input.appendChild(option);
+                });
+
+                input.value = String(
+                    type === "client"
+                        ? deal.client_id
+                        : deal.status_id
+                );
+
+            } else if (type === "textarea") {
+                input = document.createElement("textarea");
+                input.value = value ?? "";
+
+            } else {
+                input = document.createElement("input");
+                input.type = type === "date" ? "date" : "text";
+
+                input.value = value == null
+                    ? ""
+                    : type === "date"
+                        ? String(value).slice(0, 10)
+                        : String(value);
+            }
+
+            input.dataset.field = type === "client"
+                ? "client"
+                : type === "status"
+                    ? "status"
+                    : label === "Deal Name"
+                        ? "deal_name"
+                        : label === "Target Date"
+                            ? "target_date"
+                            : "notes";
+
+            input.classList.add("deal-edit-input");
+            cell.appendChild(input);
+
+        } else {
+            cell.textContent = formatValue(value);
+        }
+
+        row.appendChild(cell);
         tbody.appendChild(row);
     });
 
     table.appendChild(tbody);
     container.appendChild(table);
+}
+
+
+
+async function saveDealChanges() {
+    if (!selectedDeal) return;
+
+    const saveButton = document.getElementById("save-deal-button");
+
+    if (saveButton.disabled) return;
+
+    saveButton.disabled = true;
+
+    try {
+        const inputs = document.querySelectorAll(".deal-edit-input");
+        const updatedDeal = {};
+
+        for (const input of inputs) {
+            const field = input.dataset.field;
+            const value = input.value.trim();
+
+            if (["client", "status"].includes(field)) {
+                if (!value || Number(value) <= 0) {
+                    alert(`Please select a valid ${field}.`);
+                    input.focus();
+                    return;
+                }
+
+                updatedDeal[field] = Number(value);
+
+            } else {
+                updatedDeal[field] = value;
+            }
+        }
+
+        if (!updatedDeal.deal_name) {
+            alert("Deal name cannot be empty.");
+            return;
+        }
+
+        await API.patch(`/deals/${selectedDeal.id}/`, updatedDeal);
+
+        isEditingDeal = false;
+
+        await loadDeals();
+        await loadDealDetails(selectedDeal.id);
+
+        alert("Deal updated successfully!");
+
+    } catch (error) {
+        console.error("Update failed:", error);
+        alert("Unable to update deal: " + error.message);
+
+    } finally {
+        saveButton.disabled = false;
+    }
 }
 
 
@@ -554,26 +603,4 @@ function addCollectionTable(container, records) {
     table.append(thead, tbody);
     wrapper.appendChild(table);
     container.appendChild(wrapper);
-}
-
-function openEditMode() {
-    if (!selectedDeal) return;
-
-    const content = document.getElementById("deal-details-content");
-    const editForm = document.getElementById("edit-deal-form");
-    const editButton = document.getElementById("edit-deal-button");
-
-    document.getElementById("edit-deal-id").value = selectedDeal.id;
-    document.getElementById("edit-deal-name").value =
-        selectedDeal.deal_name ?? "";
-
-    document.getElementById("edit-deal-client").value =
-        selectedDeal.client_id ?? "";
-
-    document.getElementById("edit-deal-status").value =
-        selectedDeal.status_id ?? "";
-
-    content.hidden = true;
-    editButton.hidden = true;
-    editForm.hidden = false;
 }

@@ -276,11 +276,11 @@ def client_list(request: HttpRequest) -> JsonResponse:
 
     return JsonResponse({"count": len(results), "results": results})
 
+
 @require_http_methods(["PATCH"])
 def deal_update(request: HttpRequest, deal_id: int) -> JsonResponse:
     try:
         data = json.loads(request.body)
-
         deal = Deal.objects.get(pk=deal_id)
 
         deal_name = data.get("deal_name")
@@ -299,6 +299,14 @@ def deal_update(request: HttpRequest, deal_id: int) -> JsonResponse:
         deal.deal_name = deal_name
         deal.client = client
         deal.status = status
+
+        # Optional fields
+        if "target_date" in data:
+            deal.target_date = data["target_date"] or None
+
+        if "notes" in data:
+            deal.notes = data["notes"]
+
         deal.save()
 
         return JsonResponse({
@@ -317,6 +325,13 @@ def deal_update(request: HttpRequest, deal_id: int) -> JsonResponse:
 
     except json.JSONDecodeError:
         return JsonResponse({"detail": "Invalid JSON."}, status=400)
+
+    except (ValueError, TypeError):
+        return JsonResponse(
+            {"detail": "Invalid date or field value."},
+            status=400,
+        )
+
 
 def status_list(request: HttpRequest) -> JsonResponse:
     statuses = Status.objects.filter(

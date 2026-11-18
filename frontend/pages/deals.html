@@ -92,37 +92,25 @@
 
         <!-- Deal Details Panel -->
         <section id="deal-details-panel" class="card" hidden>
-          <div class="row">
+          <div class="row deal-details-header">
             <h2>Deal Details</h2>
-            <button type="button" id="close-deal-details">Close</button>
+
+            <div class="deal-details-actions">
+              <button type="button" id="edit-deal-button">Edit Deal</button>
+
+              <button type="button" id="save-deal-button" hidden>
+                Save Changes
+              </button>
+
+              <button type="button" id="cancel-edit" hidden>Cancel</button>
+
+              <button type="button" id="close-deal-details">Close</button>
+            </div>
           </div>
 
           <div id="deal-details-content">
             <!-- Deal summary and tabbed tables will be loaded here -->
           </div>
-
-          <button type="button" id="edit-deal-button">Edit Deal</button>
-
-          <!-- Edit form, initially hidden -->
-          <form id="edit-deal-form" hidden>
-            <input type="hidden" id="edit-deal-id" />
-
-            <label for="edit-deal-name">Deal Name</label>
-            <input type="text" id="edit-deal-name" required />
-
-            <label for="edit-deal-client">Customer</label>
-            <select id="edit-deal-client" required>
-              <option value="">Select a customer</option>
-            </select>
-
-            <label for="edit-deal-status">Status</label>
-            <select id="edit-deal-status" required>
-              <option value="">Select a status</option>
-            </select>
-
-            <button type="submit">Save Changes</button>
-            <button type="button" id="cancel-edit">Cancel</button>
-          </form>
         </section>
       </main>
     </div>

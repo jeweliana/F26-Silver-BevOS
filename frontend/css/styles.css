@@ -445,3 +445,36 @@ margin-bottom: 0.75rem;
         padding: 8px 10px;
     }
 }
+
+.deal-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.deal-details-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.deal-details-actions button {
+    margin: 0;
+}
+
+.deal-edit-input {
+    width: 100%;
+    min-width: 150px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--white);
+    color: var(--text-primary);
+    font: inherit;
+}
+
+textarea.deal-edit-input {
+    min-height: 90px;
+    resize: vertical;
+}
