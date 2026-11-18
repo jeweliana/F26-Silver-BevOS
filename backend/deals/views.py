@@ -6,6 +6,9 @@ from . import services
 from .models import *
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 def _int(value: str | None) -> int | None:
     """
@@ -348,3 +351,176 @@ def status_list(request: HttpRequest) -> JsonResponse:
     ]
 
     return JsonResponse({"count": len(results), "results": results})
+
+# Customer purchase orders associated with a deal.
+ORDER_STATUSES = ("Draft", "Open", "In Progress", "Completed", "Cancelled")
+
+
+@login_required
+@require_http_methods(["POST"])
+def customer_po_create(request: HttpRequest, deal_id: int) -> JsonResponse:
+    deal = get_object_or_404(Deal, pk=deal_id)
+
+    try:
+        data = json.loads(request.body)
+    except (ValueError, UnicodeDecodeError):
+        return JsonResponse({"detail": "Invalid JSON."}, status=400)
+
+    if not isinstance(data, dict):
+        return JsonResponse({"detail": "Expected an order object."}, status=400)
+
+    po_number = str(data.get("po_number") or "").strip()
+    status = str(data.get("status") or "Draft").strip()
+
+    if not po_number:
+        return JsonResponse({"detail": "PO number is required."}, status=400)
+
+    if status not in ORDER_STATUSES:
+        return JsonResponse({"detail": "Please choose a valid order status."}, status=400)
+
+    order = CustomerPO(
+        deal=deal,
+        client=deal.client,
+        po_number=po_number,
+        po_date=data.get("po_date") or None,
+        expected_ship_date=data.get("expected_ship_date") or None,
+        total_amount=data.get("total_amount") if data.get("total_amount") not in (None, "") else None,
+        currency="USD",
+        status=status,
+        notes=str(data.get("notes") or ""),
+    )
+
+    try:
+        order.full_clean()
+        order.save()
+    except ValidationError as error:
+        return JsonResponse({"detail": "; ".join(error.messages)}, status=400)
+    except IntegrityError:
+        return JsonResponse({"detail": "This PO number is already in use."}, status=400)
+
+    return JsonResponse({"message": "Order created.", "id": order.pk}, status=201)
+
+
+@login_required
+@require_http_methods(["PATCH"])
+def customer_po_update(request: HttpRequest, deal_id: int, po_id: int) -> JsonResponse:
+    order = get_object_or_404(CustomerPO, pk=po_id, deal_id=deal_id)
+
+    try:
+        data = json.loads(request.body)
+    except (ValueError, UnicodeDecodeError):
+        return JsonResponse({"detail": "Invalid JSON."}, status=400)
+
+    if not isinstance(data, dict) or "status" not in data:
+        return JsonResponse({"detail": "An order status is required."}, status=400)
+
+    status = str(data["status"]).strip()
+
+    if status not in ORDER_STATUSES:
+        return JsonResponse({"detail": "Please choose a valid order status."}, status=400)
+
+    order.status = status
+    order.save(update_fields=["status", "updated_at"])
+
+    return JsonResponse({
+        "message": "Order status updated.",
+        "id": order.pk,
+        "status": order.status
+    })
+
+# Create a new customer
+@login_required
+@require_http_methods(["POST"])
+def client_create(request):
+    try:
+        data = json.loads(request.body)
+    except (ValueError, UnicodeDecodeError):
+        return JsonResponse({"detail": "Invalid JSON."}, status=400)
+
+    if not isinstance(data, dict):
+        return JsonResponse({"detail": "Invalid customer information."}, status=400)
+
+    name = str(data.get("client_name") or "").strip()
+
+    if not name:
+        return JsonResponse({"detail": "Customer name is required."}, status=400)
+
+    customer = Client(
+        client_name=name,
+        contact_name=str(data.get("contact_name") or "").strip(),
+        email=str(data.get("email") or "").strip(),
+        phone=str(data.get("phone") or "").strip(),
+        address=str(data.get("address") or "").strip(),
+        notes=str(data.get("notes") or "").strip(),
+    )
+
+    try:
+        customer.full_clean()
+        customer.save()
+    except ValidationError as error:
+        return JsonResponse({"detail": "; ".join(error.messages)}, status=400)
+    except IntegrityError:
+        return JsonResponse({"detail": "Customer already exists."}, status=400)
+
+    return JsonResponse({
+        "message": "Customer created successfully.",
+        "id": customer.id,
+        "client_name": customer.client_name
+    }, status=201)
+
+
+# Create a new deal for an existing customer
+@login_required
+@require_http_methods(["POST"])
+def deal_create(request):
+    try:
+        data = json.loads(request.body)
+    except (ValueError, UnicodeDecodeError):
+        return JsonResponse({"detail": "Invalid JSON."}, status=400)
+
+    if not isinstance(data, dict):
+        return JsonResponse({"detail": "Invalid deal information."}, status=400)
+
+    deal_number = str(data.get("deal_number") or "").strip()
+    deal_name = str(data.get("deal_name") or "").strip()
+
+    if not deal_number or not deal_name:
+        return JsonResponse({
+            "detail": "Deal number and deal name are required."
+        }, status=400)
+
+    try:
+        client = Client.objects.get(pk=data.get("client"))
+        status = Status.objects.get(
+            pk=data.get("status"),
+            category="deal",
+            is_active=True
+        )
+    except (Client.DoesNotExist, Status.DoesNotExist, ValueError, TypeError):
+        return JsonResponse({
+            "detail": "Please select a valid customer and status."
+        }, status=400)
+
+    deal = Deal(
+        deal_number=deal_number,
+        deal_name=deal_name,
+        client=client,
+        status=status,
+        target_date=data.get("target_date") or None,
+        notes=str(data.get("notes") or ""),
+        created_by=request.user
+    )
+
+    try:
+        deal.full_clean()
+        deal.save()
+    except ValidationError as error:
+        return JsonResponse({"detail": "; ".join(error.messages)}, status=400)
+    except IntegrityError:
+        return JsonResponse({"detail": "Deal number already exists."}, status=400)
+
+    return JsonResponse({
+        "message": "Deal created successfully.",
+        "id": deal.id,
+        "deal_number": deal.deal_number
+    }, status=201)

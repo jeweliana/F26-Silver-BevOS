@@ -14,12 +14,6 @@
   <body>
     <div id="app" hidden>
       <header class="topbar">
-        <!-- <a class="brand" href="../index.html">Silver·BevOS</a>
-    <nav class="nav">
-      <a href="../index.html">Home</a>
-      <a href="./deals.html" class="active">Deals</a>
-      <a href="./analytics.html">Analytics</a>
-    </nav> -->
       </header>
 
       <div id="nav_container">
@@ -62,10 +56,31 @@
           <p class="muted">Manage and track beverage packaging deals.</p>
         </section>
 
-        <section class="card">
-          <h2>All Deals</h2>
+        
+    <section class="card">
+      <div class="deals-heading">
+        <h2>All Deals</h2>
 
-          <input type="search" id="deal-search" placeholder="Search deals..." />
+        <div class="deals-create-actions">
+          <button type="button" id="new-customer-btn" class="secondary-action">
+            <svg viewBox="0 0 24 24" width="18" height="18"
+                fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M20 8v6M17 11h6"/>
+            </svg>
+            New Customer
+          </button>
+
+          <button type="button" id="new-deal-btn">
+            <span aria-hidden="true">+</span> New Deal
+          </button>
+        </div>
+      </div>
+
+  <input type="search" id="deal-search" placeholder="Search deals..." />
 
           <p id="deals-status" class="muted">Loading deals...</p>
 
@@ -89,6 +104,107 @@
             </table>
           </div>
         </section>
+
+<!-- Create Customer -->
+<section id="new-customer-panel" class="card creation-panel" hidden>
+  <h2>Add New Customer</h2>
+  <p class="muted">Register a new company in BevOS.</p>
+
+  <form id="new-customer-form" class="creation-form">
+    <label>
+      Company Name *
+      <input name="client_name" required maxlength="200">
+    </label>
+
+    <label>
+      Contact Name
+      <input name="contact_name" maxlength="200">
+    </label>
+
+    <label>
+      Email
+      <input name="email" type="email" maxlength="320">
+    </label>
+
+    <label>
+      Phone
+      <input name="phone" type="tel" maxlength="50">
+    </label>
+
+    <label class="form-full">
+      Address
+      <textarea name="address" rows="2"></textarea>
+    </label>
+
+    <label class="form-full">
+      Notes
+      <textarea name="notes" rows="2"></textarea>
+    </label>
+
+    <div class="form-buttons">
+      <button type="submit">Save Customer</button>
+      <button type="button" id="cancel-new-customer"
+              class="secondary-action">Cancel</button>
+    </div>
+
+    <p id="customer-form-message" class="form-full"
+       role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<!-- Create Deal -->
+<section id="new-deal-panel" class="card creation-panel" hidden>
+  <h2>Create New Deal</h2>
+  <p class="muted">Create a deal for an existing customer.</p>
+
+  <form id="new-deal-form" class="creation-form">
+    <label>
+      Deal Number *
+      <input name="deal_number" required maxlength="100"
+             placeholder="DEAL-2026-001">
+    </label>
+
+    <label>
+      Deal Name *
+      <input name="deal_name" required maxlength="255"
+             placeholder="Beverage Packaging">
+    </label>
+
+    <label>
+      Customer *
+      <select name="client" id="new-deal-client" required>
+        <option value="">Select customer</option>
+      </select>
+    </label>
+
+    <label>
+      Status *
+      <select name="status" id="new-deal-status" required>
+        <option value="">Select status</option>
+      </select>
+    </label>
+
+    <label>
+      Target Date
+      <input name="target_date" type="date">
+    </label>
+
+    <label class="form-full">
+      Notes
+      <textarea name="notes" rows="3"></textarea>
+    </label>
+
+    <div class="form-buttons">
+      <button type="submit">Save Deal</button>
+      <button type="button" id="cancel-new-deal"
+              class="secondary-action">Cancel</button>
+    </div>
+
+    <p id="deal-form-message" class="form-full"
+       role="status" aria-live="polite"></p>
+  </form>
+</section>
+
 
         <!-- Deal Details Panel -->
         <section id="deal-details-panel" class="card" hidden>
