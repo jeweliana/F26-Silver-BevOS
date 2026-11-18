@@ -77,15 +77,39 @@
                   <th>Deal Name</th>
                   <th>Customer</th>
                   <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
 
               <tbody id="deals-table-body">
                 <tr>
-                  <td colspan="4">Loading deals...</td>
+                  <td colspan="5">Loading deals...</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+        </section>
+
+        <!-- Deal Details Panel -->
+        <section id="deal-details-panel" class="card" hidden>
+          <div class="row deal-details-header">
+            <h2>Deal Details</h2>
+
+            <div class="deal-details-actions">
+              <button type="button" id="edit-deal-button">Edit Deal</button>
+
+              <button type="button" id="save-deal-button" hidden>
+                Save Changes
+              </button>
+
+              <button type="button" id="cancel-edit" hidden>Cancel</button>
+
+              <button type="button" id="close-deal-details">Close</button>
+            </div>
+          </div>
+
+          <div id="deal-details-content">
+            <!-- Deal summary and tabbed tables will be loaded here -->
           </div>
         </section>
       </main>
