@@ -5,11 +5,7 @@ from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from core.models import Client, Status, Supplier
-from deals.models import (
-    CustomerInvoice, CustomerPO, CustomerQuote, Deal, DealActivity, DealNote,
-    Document, NicePackagePO, PackagingRequirement, Specification, StatusHistory,
-    SupplierInvoice, SupplierQuote,
-)
+from deals.models import *
 
 USERS = [
     ("phillip.d", "Phillip D", "phillip@test", "admin"),
@@ -40,7 +36,7 @@ SUPPLIERS = [
 ]
 
 CATEGORIES = {
-    "deal": ["Draft", "In Progress", "Completed"],
+    "deal": ["Draft", "In Progress", "Completed", "Cancelled"],
     "customer_quote": ["Quote Draft", "Quote Sent", "Quote Accepted"],
     "customer_po": ["Customer PO Open", "Customer PO Confirmed", "Customer PO Fulfilled"],
     "customer_invoice": ["Customer Invoice Draft", "Customer Invoice Issued",
@@ -51,7 +47,7 @@ CATEGORIES = {
 }
 
 DEALS = [
-    ("NPC-2026-001", "Harbor Foods Carton Refresh", 0, "In Progress", date(2026, 11, 20),
+    ("2026-001", "Harbor Foods Carton Refresh", 0, "In Progress", date(2026, 11, 20),
      "carton", "Double-wall corrugated shipping carton", 12000,
      "Outside dimensions", "400 x 300 x 250", "mm",
      "CQ-2026-001", Decimal("18600.00"), "Quote Sent",
@@ -61,7 +57,7 @@ DEALS = [
      "NPC-PO-2026-001", "Supplier PO Ordered", date(2026, 11, 10),
      "SI-ACW-3001", "Supplier Invoice Approved",
      "harbor-carton-spec.pdf"),
-    ("NPC-2026-002", "Greenfield Beverage Tray Program", 1, "Draft", date(2026, 12, 5),
+    ("2026-002", "Greenfield Beverage Tray Program", 1, "Draft", date(2026, 12, 5),
      "tray", "Six-pack beverage carrier tray", 8000,
      "Pack configuration", "6 x 330 mL bottles", "",
      "CQ-2026-002", Decimal("9200.00"), "Quote Accepted",
@@ -71,7 +67,7 @@ DEALS = [
      "NPC-PO-2026-002", "Supplier PO Requested", date(2026, 11, 28),
      "SI-BRP-3002", "Supplier Invoice Received",
      "greenfield-quote.pdf"),
-    ("NPC-2026-003", "Summit Nutrition Can Packaging", 2, "Completed", date(2026, 10, 30),
+    ("2026-003", "Summit Nutrition Can Packaging", 2, "Completed", date(2026, 10, 30),
      "can", "Printed metal can with easy-open end", 15000,
      "Nominal capacity", "400", "mL",
      "CQ-2026-003", Decimal("12750.00"), "Quote Draft",
@@ -133,11 +129,15 @@ class Command(BaseCommand):
              cin, ci_status, sqn, sq_amount, sq_status, npn, np_status, ship,
              sin, si_status, filename) = row
             client, supplier = clients[ci], suppliers[ci]
-            deal, _ = Deal.objects.get_or_create(
+            deal, created = Deal.objects.update_or_create(
                 deal_number=number,
-                defaults={"deal_name": title, "client": client,
-                          "status": statuses[status_label], "target_date": target,
-                          "created_by": users[ci]},
+                defaults={
+                    "deal_name": title,
+                    "client": client,
+                    "status": statuses[status_label],
+                    "target_date": target,
+                    "created_by": users[ci],
+                },
             )
             PackagingRequirement.objects.get_or_create(
                 deal=deal, item_type=item_type,
