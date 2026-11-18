@@ -1,6 +1,7 @@
 # This script seeds the database with demo data for testing.
 
-from datetime import date
+from datetime import date, timedelta
+from django.utils import timezone
 from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
@@ -191,18 +192,51 @@ class Command(BaseCommand):
                           "file_type": "application/pdf", "file_size": 245760,
                           "uploaded_by": users[ci]},
             )
-            StatusHistory.objects.get_or_create(
+            now = timezone.now()
+            offset = ci * 2
+
+            status_hist, _ = StatusHistory.objects.get_or_create(
                 deal=deal, status=statuses[status_label],
                 defaults={"changed_by": users[ci], "notes": f"Set to {status_label}"},
             )
-            DealNote.objects.get_or_create(
+
+            StatusHistory.objects.filter(pk=status_hist.pk).update(
+                changed_at=now - timedelta(days=offset, hours=1)
+            )
+
+            note, _ = DealNote.objects.get_or_create(
                 deal=deal, note_text=f"Demo note for {title}.",
                 defaults={"created_by": users[ci]},
             )
-            DealActivity.objects.get_or_create(
+            DealNote.objects.filter(pk=note.pk).update(
+                created_at=now - timedelta(days=offset, hours=4)
+            )
+
+            contact, _ = DealActivity.objects.get_or_create(
                 deal=deal, activity_type="Client Contact",
                 defaults={"description": f"Kickoff contact for {title}.",
                           "performed_by": users[ci]},
+            )
+            DealActivity.objects.filter(pk=contact.pk).update(
+                performed_at=now - timedelta(days=offset + 1)
+            )
+
+            quote_act, _ = DealActivity.objects.get_or_create(
+                deal=deal, activity_type= "Quote Sent",
+                defaults={"description": f"Quote {cqn} sent to {client.client_name}.",
+                          "performed_by": users[ci]},
+            )
+            DealActivity.objects.filter(pk=quote_act.pk).update(
+                performed_at=now - timedelta(days=offset, hours=6)
+            )
+
+            po_act, _ = DealActivity.objects.get_or_create(
+                deal=deal, activity_type="PO Received",
+                defaults={"description": f"Customer PO {pol} received from {client.client_name}.",
+                          "performed_by": users[ci]},
+            )
+            DealActivity.objects.filter(pk=po_act.pk).update(
+                performed_at=now - timedelta(days=offset, hours=2)
             )
 
         self.stdout.write(self.style.SUCCESS(

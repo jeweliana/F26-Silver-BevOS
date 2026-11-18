@@ -524,3 +524,17 @@ def deal_create(request):
         "id": deal.id,
         "deal_number": deal.deal_number
     }, status=201)
+
+def recent_activity(request: HttpRequest) -> JsonResponse:
+    """GET /api/deals/recent-activity/ - latest events across all deals."""
+    events = services.recent_activity(limit=10)
+    results = [
+        {
+            "type": e["type"],
+            "description": e["description"],
+            "user": e["user"],
+            "timestamp": e["timestamp"].isoformat(),
+        }
+        for e in events
+    ]
+    return JsonResponse({"results": results})
