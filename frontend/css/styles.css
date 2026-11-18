@@ -331,3 +331,117 @@ margin-bottom: 0.75rem;
 [hidden] {
   display: none !important;
 }
+
+/* Deal summary */
+.deal-summary {
+    margin-bottom: 24px;
+}
+
+.deal-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.deal-summary-item {
+    padding: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.deal-summary-item p {
+    margin-bottom: 0;
+}
+
+/* Deal tabs */
+.deal-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 28px 0 20px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid var(--border);
+}
+
+.deal-tabs .deal-tab {
+    padding: 12px 18px;
+    margin: 0;
+    border: 1px solid #ccc;
+    border-radius: 7px;
+
+    background: rgba(245, 247, 251, 0.3);
+    color: rgba(23, 35, 61, 0.4);
+
+    opacity: 0.5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.deal-tabs .deal-tab:hover:not(.active) {
+    opacity: 0.7;
+    background: rgba(245, 247, 251, 0.6);
+}
+
+.deal-tabs .deal-tab.active {
+    opacity: 1;
+    background: rgb(48, 67, 104);
+    color: white;
+    border-color: rgb(48, 67, 104);
+}
+
+/* Deal data tables */
+.deal-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.deal-data-table th,
+.deal-data-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border: 1px solid #d1d5db;
+}
+
+.deal-data-table thead th {
+    background-color: #e9edf3;
+    font-weight: 600;
+}
+
+.deal-data-table tbody th {
+    width: 220px;
+    background-color: #f3f4f6;
+    font-weight: 600;
+}
+
+.deal-data-table tbody tr:nth-child(even) td {
+    background-color: #fafafa;
+}
+
+/* Separate each tab's content */
+.deal-tab-panel {
+    padding: 20px;
+    margin-top: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.deal-tab-panel[hidden] {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .deal-tabs {
+        gap: 6px;
+    }
+
+    .deal-tab {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+}

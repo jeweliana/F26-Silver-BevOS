@@ -3,8 +3,9 @@ from django.shortcuts import render
 from django.http import HttpRequest, JsonResponse
 from core.models import Client, Status
 from . import services
-from .models import Deal
+from .models import *
 from django.views.decorators.http import require_http_methods
+from django.shortcuts import get_object_or_404
 
 def _int(value: str | None) -> int | None:
     """
@@ -52,6 +53,213 @@ def deal_list(request: HttpRequest) -> JsonResponse:
         for d in deals
     ]
     return JsonResponse({"count": len(results), "results": results})
+
+def deal_detail(request: HttpRequest, deal_id: int) -> JsonResponse:
+    """GET /api/deals/<id>/ - Retrieve a deal and all related information."""
+
+    deal = get_object_or_404(
+        Deal.objects.select_related(
+            "client",
+            "status",
+            "created_by",
+        ),
+        pk=deal_id,
+    )
+
+    results = {
+        # Basic deal information
+        "id": deal.pk,
+        "deal_number": deal.deal_number,
+        "deal_name": deal.deal_name,
+        "client": deal.client.client_name,
+        "client_id": deal.client_id,
+        "status": deal.status.status_name,
+        "status_id": deal.status_id,
+        "target_date": deal.target_date.isoformat() if deal.target_date else None,
+        "created_by": deal.created_by.username if deal.created_by else None,
+        "created_at": deal.created_at.isoformat(),
+        "updated_at": deal.updated_at.isoformat(),
+        "notes": deal.notes,
+
+        # Packaging requirements
+        "packaging_requirements": [
+            {
+                "id": item.pk,
+                "item_type": item.item_type,
+                "specification": item.specification,
+                "quantity": item.quantity,
+                "unit": item.unit,
+                "uom": item.uom,
+                "notes": item.notes,
+            }
+            for item in deal.packaging_requirements.all()
+        ],
+
+        # Specifications
+        "specifications": [
+            {
+                "id": item.pk,
+                "item_type": item.item_type,
+                "spec_name": item.spec_name,
+                "spec_value": item.spec_value,
+                "unit": item.unit,
+                "notes": item.notes,
+            }
+            for item in deal.specifications.all()
+        ],
+
+        # Customer quotes
+        "customer_quotes": [
+            {
+                "id": item.pk,
+                "quote_number": item.quote_number,
+                "client": item.client.client_name,
+                "quote_date": item.quote_date,
+                "valid_until": item.valid_until,
+                "total_amount": item.total_amount,
+                "currency": item.currency,
+                "status": item.status,
+                "notes": item.notes,
+            }
+            for item in deal.customer_quotes.select_related("client").all()
+        ],
+
+        # Customer purchase orders
+        "customer_pos": [
+            {
+                "id": item.pk,
+                "po_number": item.po_number,
+                "client": item.client.client_name,
+                "po_date": item.po_date,
+                "expected_ship_date": item.expected_ship_date,
+                "total_amount": item.total_amount,
+                "currency": item.currency,
+                "status": item.status,
+                "notes": item.notes,
+            }
+            for item in deal.customer_pos.select_related("client").all()
+        ],
+
+        # Customer invoices
+        "customer_invoices": [
+            {
+                "id": item.pk,
+                "invoice_number": item.invoice_number,
+                "client": item.client.client_name,
+                "invoice_date": item.invoice_date,
+                "due_date": item.due_date,
+                "total_amount": item.total_amount,
+                "currency": item.currency,
+                "status": item.status,
+                "notes": item.notes,
+            }
+            for item in deal.customer_invoices.select_related("client").all()
+        ],
+
+        # Supplier quotes
+        "supplier_quotes": [
+            {
+                "id": item.pk,
+                "quote_number": item.quote_number,
+                "supplier": item.supplier.supplier_name,
+                "quote_date": item.quote_date,
+                "valid_until": item.valid_until,
+                "total_amount": item.total_amount,
+                "currency": item.currency,
+                "status": item.status,
+                "notes": item.notes,
+            }
+            for item in deal.supplier_quotes.select_related("supplier").all()
+        ],
+
+        # Supplier purchase orders
+        "supplier_pos": [
+            {
+                "id": item.pk,
+                "po_number": item.po_number,
+                "supplier": item.supplier.supplier_name,
+                "po_date": item.po_date,
+                "expected_delivery_date": item.expected_delivery_date,
+                "total_amount": item.total_amount,
+                "currency": item.currency,
+                "status": item.status,
+                "notes": item.notes,
+            }
+            for item in deal.supplier_pos.select_related("supplier").all()
+        ],
+
+        # Supplier invoices
+        "supplier_invoices": [
+            {
+                "id": item.pk,
+                "invoice_number": item.invoice_number,
+                "supplier": item.supplier.supplier_name,
+                "invoice_date": item.invoice_date,
+                "due_date": item.due_date,
+                "total_amount": item.total_amount,
+                "currency": item.currency,
+                "status": item.status,
+                "notes": item.notes,
+            }
+            for item in deal.supplier_invoices.select_related("supplier").all()
+        ],
+
+        # Documents
+        "documents": [
+            {
+                "id": item.pk,
+                "module_type": item.module_type,
+                "module_id": item.module_id,
+                "file_name": item.file_name,
+                "file_path": item.file_path,
+                "file_type": item.file_type,
+                "file_size": item.file_size,
+                "uploaded_by": item.uploaded_by.username if item.uploaded_by else None,
+                "uploaded_at": item.uploaded_at.isoformat(),
+                "description": item.description,
+            }
+            for item in deal.documents.select_related("uploaded_by").all()
+        ],
+
+        # Status history
+        "status_history": [
+            {
+                "id": item.pk,
+                "status": item.status.status_name,
+                "changed_by": item.changed_by.username if item.changed_by else None,
+                "changed_at": item.changed_at.isoformat(),
+                "notes": item.notes,
+            }
+            for item in deal.status_history.select_related(
+                "status", "changed_by"
+            ).all()
+        ],
+
+        # Deal notes
+        "deal_notes": [
+            {
+                "id": item.pk,
+                "note_text": item.note_text,
+                "created_by": item.created_by.username if item.created_by else None,
+                "created_at": item.created_at.isoformat(),
+            }
+            for item in deal.deal_notes.select_related("created_by").all()
+        ],
+
+        # Deal activities
+        "activities": [
+            {
+                "id": item.pk,
+                "activity_type": item.activity_type,
+                "description": item.description,
+                "performed_by": item.performed_by.username if item.performed_by else None,
+                "performed_at": item.performed_at.isoformat(),
+            }
+            for item in deal.activities.select_related("performed_by").all()
+        ],
+    }
+
+    return JsonResponse(results)
 
 def client_list(request: HttpRequest) -> JsonResponse:
     """GET /api/clients/"""
