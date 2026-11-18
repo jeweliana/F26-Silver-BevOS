@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'deals',
     'accounts',
     'analytics',
+    'approvals',
     'core',
 ]
 
