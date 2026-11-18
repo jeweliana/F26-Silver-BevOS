@@ -5,6 +5,7 @@ app_name = "deals"
 
 urlpatterns = [
     path("deals/", views.deal_list, name="deal-list"),
+    path("deals/recent-activity/", views.recent_activity, name="recent-activity"),
     path("deals/create/", views.deal_create, name="deal-create"),
     path("clients/create/", views.client_create, name="client-create"),
     path("deals/<int:deal_id>/", views.deal_update, name="deal-update"),
