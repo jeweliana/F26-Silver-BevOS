@@ -1,7 +1,7 @@
 import logging
 from datetime import date
 from typing import Optional
-from deals.models import Deal, StatusHistory
+from deals.models import Deal, StatusHistory, DealNote, DealActivity
 from core.models import Client, Status, Supplier
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -123,3 +123,45 @@ def get_deal(deal_id: int) -> Deal:
         Deal.DoesNotExist: If no deal with the given ID exists.
     """
     return Deal.objects.get(id=deal_id)
+
+def recent_activity(limit: int = 10):
+    """
+    Build a combined, time sorted feed of recent event across all deals.
+
+    Merges status changes, notesm and deal activities into one list of event,
+    dicts, sorted newest first.
+
+    Args:
+        limit (int): Maximum number of events to return.
+
+    Returns:
+        list[dict]: Event dicts with type, description, user, and timestamp.
+    """
+    events = []
+
+    for sh in StatusHistory.objects.select_related("deal", "status", "changed_by"):
+        events.append({
+            "type": "status",
+            "description": f"Status set to {sh.status.status_name} on {sh.deal.deal_number}",
+            "user": sh.changed_by.username if sh.changed_by else None,
+            "timestamp": sh.changed_at,
+        })
+
+    for note in DealNote.objects.select_related("deal", "created_by"):
+        events.append({
+            "type": "note",
+            "description": f"Note added on {note.deal.deal_number}",
+            "user": note.created_by.username if note.created_by else None,
+            "timestamp": note.created_at,
+        })
+
+    for act in DealActivity.objects.select_related("deal", "performed_by"):
+        events.append({
+            "type": act.activity_type,
+            "description": act.description,
+            "user": act.performed_by.username if act.performed_by else None,
+            "timestamp": act.performed_at
+        })
+
+    events.sort(key=lambda e: e["timestamp"], reverse=True)
+    return events[:limit]

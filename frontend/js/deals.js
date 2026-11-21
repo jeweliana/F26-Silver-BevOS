@@ -179,7 +179,14 @@ document.addEventListener("DOMContentLoaded", () => {
             renderDealDetails(selectedDeal);
         });
 
-    // Initial load
+    
+    // Initialize the new customer and deal forms
+    try {
+        setupCreationForms();
+    } catch (error) {
+        console.error("Unable to initialize creation forms:", error);
+    }
+    // Load the existing deals and form data
     Promise.all([
         loadClients(),
         loadStatuses()
@@ -187,8 +194,10 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(() => loadDeals())
     .catch(error => {
         console.error("Unable to load form data:", error);
-        alert("Unable to load customers or statuses.");
+        document.getElementById("deals-status").textContent =
+            "Unable to load deals: " + error.message;
     });
+
 });
 
 async function loadClients() {
@@ -354,6 +363,8 @@ function renderDealDetails(deal) {
 
         if (section.type === "details") {
             addDealInformation(panel, deal);
+        } else if (section.id === "customer-pos") {
+            addCustomerOrders(panel, deal);
         } else {
             addCollectionTable(
                 panel,
@@ -604,3 +615,367 @@ function addCollectionTable(container, records) {
     wrapper.appendChild(table);
     container.appendChild(wrapper);
 }
+
+
+const orderStatuses = [
+    "Draft",
+    "Open",
+    "In Progress",
+    "Completed",
+    "Cancelled"
+];
+
+function addCustomerOrders(panel, deal) {
+    // Heading and Add Order button
+    const heading = createElement("div", "order-heading");
+    heading.appendChild(
+        createElement("h3", null, "Customer Purchase Orders")
+    );
+
+    const addButton = createElement("button", null, "+ Add Order");
+    addButton.type = "button";
+    heading.appendChild(addButton);
+    panel.appendChild(heading);
+
+    // Create the order form
+    const form = document.createElement("form");
+    form.className = "order-form";
+    form.hidden = true;
+
+    form.innerHTML = `
+        <label>
+            PO Number *
+            <input name="po_number" maxlength="100"
+                   required placeholder="e.g. PO-2026-004">
+        </label>
+
+        <label>
+            PO Date
+            <input name="po_date" type="date">
+        </label>
+
+        <label>
+            Expected Ship Date
+            <input name="expected_ship_date" type="date">
+        </label>
+
+        <label>
+            Total Amount (USD)
+            <input name="total_amount" type="number"
+                   step="0.01" min="0" placeholder="0.00">
+        </label>
+
+        <label>
+            Status
+            <select name="status">
+                ${orderStatuses.map(status =>
+                    `<option value="${status}">${status}</option>`
+                ).join("")}
+            </select>
+        </label>
+
+        <label class="order-wide">
+            Notes
+            <textarea name="notes" rows="2"></textarea>
+        </label>
+
+        <div class="order-actions">
+            <button type="submit">Save Order</button>
+            <button type="button" class="order-cancel">Cancel</button>
+        </div>
+
+        <p class="order-feedback" role="status"
+           aria-live="polite"></p>
+    `;
+
+    panel.appendChild(form);
+
+    // Show or hide the form
+    addButton.addEventListener("click", () => {
+        form.hidden = !form.hidden;
+
+        if (!form.hidden) {
+            form.elements.po_number.focus();
+        }
+    });
+
+    // Cancel creating an order
+    form.querySelector(".order-cancel").addEventListener("click", () => {
+        form.reset();
+        form.hidden = true;
+    });
+
+    // Save a new order
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const submit = form.querySelector('[type="submit"]');
+        const feedback = form.querySelector(".order-feedback");
+        const values = Object.fromEntries(new FormData(form).entries());
+
+        submit.disabled = true;
+        feedback.textContent = "Saving order...";
+
+        try {
+            await API.post(`/deals/${deal.id}/customer-pos/`, values);
+            await refreshDealKeepingTab(deal.id, "customer-pos");
+        } catch (error) {
+            feedback.textContent = "Could not save order: " + error.message;
+        } finally {
+            submit.disabled = false;
+        }
+    });
+
+    // Display existing orders
+    const orders = deal.customer_pos ?? [];
+
+    if (!orders.length) {
+        panel.appendChild(
+            createElement("p", "muted", "No customer purchase orders yet.")
+        );
+        return;
+    }
+
+    const wrapper = createElement("div", "deals-table-wrapper");
+    const table = createElement("table", "deal-data-table");
+
+    // Table headers
+    const header = document.createElement("tr");
+
+    [
+        "PO Number",
+        "PO Date",
+        "Expected Ship Date",
+        "Amount",
+        "Status",
+        "Actions"
+    ].forEach(label => {
+        header.appendChild(createElement("th", null, label));
+    });
+
+    const thead = document.createElement("thead");
+    thead.appendChild(header);
+    table.appendChild(thead);
+
+    const body = document.createElement("tbody");
+
+    // Create a row for each order
+    orders.forEach(order => {
+        const row = document.createElement("tr");
+
+        [
+            order.po_number,
+            order.po_date,
+            order.expected_ship_date,
+            order.total_amount == null
+                ? "—"
+                : `${order.currency || "USD"} ${order.total_amount}`
+        ].forEach(value => {
+            row.appendChild(
+                createElement("td", null, formatValue(value))
+            );
+        });
+
+        // Status dropdown
+        const statusCell = document.createElement("td");
+        const statusSelect = document.createElement("select");
+
+        statusSelect.setAttribute(
+            "aria-label",
+            `Status for ${order.po_number}`
+        );
+
+        orderStatuses.forEach(status => {
+            const option = document.createElement("option");
+            option.value = status;
+            option.textContent = status;
+            statusSelect.appendChild(option);
+        });
+
+        // Preserve existing statuses from the database
+        if (order.status && !orderStatuses.includes(order.status)) {
+            const original = document.createElement("option");
+            original.value = order.status;
+            original.textContent = order.status;
+            statusSelect.appendChild(original);
+        }
+
+        statusSelect.value = order.status || "Draft";
+        statusCell.appendChild(statusSelect);
+        row.appendChild(statusCell);
+
+        // Save Status button
+        const actionCell = document.createElement("td");
+        const save = createElement("button", null, "Save Status");
+        save.type = "button";
+
+        const message = createElement("span", "order-row-message", "");
+        message.setAttribute("role", "status");
+
+        save.addEventListener("click", async () => {
+            save.disabled = true;
+            message.textContent = "Saving...";
+
+            try {
+                await API.patch(
+                    `/deals/${deal.id}/customer-pos/${order.id}/`,
+                    { status: statusSelect.value }
+                );
+
+                message.textContent = "Saved";
+                await refreshDealKeepingTab(deal.id, "customer-pos");
+            } catch (error) {
+                message.textContent = error.message;
+            } finally {
+                save.disabled = false;
+            }
+        });
+
+        actionCell.append(save, message);
+        row.appendChild(actionCell);
+        body.appendChild(row);
+    });
+
+    table.appendChild(body);
+    wrapper.appendChild(table);
+    panel.appendChild(wrapper);
+}
+
+// Reload updated order data without leaving the Customer POs tab
+async function refreshDealKeepingTab(dealId, tab) {
+    const updated = await API.get(`/deals/${dealId}/detail/`);
+
+    if (String(selectedDealId) !== String(dealId)) {
+        return;
+    }
+
+    selectedDeal = updated;
+    renderDealDetails(updated);
+
+    document.querySelector(
+        `#deal-details-content .deal-tab[data-tab="${tab}"]`
+    )?.click();
+}
+
+function setupCreationForms() {
+    const customerPanel = document.getElementById("new-customer-panel");
+    const dealPanel = document.getElementById("new-deal-panel");
+
+    const customerForm = document.getElementById("new-customer-form");
+    const dealForm = document.getElementById("new-deal-form");
+
+    // Show the customer creation form
+    document.getElementById("new-customer-btn").addEventListener("click", () => {
+        dealPanel.hidden = true;
+        customerPanel.hidden = false;
+        customerPanel.scrollIntoView({ behavior: "smooth" });
+    });
+
+    // Show the deal creation form
+    document.getElementById("new-deal-btn").addEventListener("click", () => {
+        customerPanel.hidden = true;
+        dealPanel.hidden = false;
+        populateDealDropdowns();
+        dealPanel.scrollIntoView({ behavior: "smooth" });
+    });
+
+    // Cancel buttons
+    document.getElementById("cancel-new-customer").addEventListener("click", () => {
+        customerForm.reset();
+        customerPanel.hidden = true;
+        document.getElementById("customer-form-message").textContent = "";
+    });
+
+    document.getElementById("cancel-new-deal").addEventListener("click", () => {
+        dealForm.reset();
+        dealPanel.hidden = true;
+        document.getElementById("deal-form-message").textContent = "";
+    });
+
+    // Save a new customer
+    customerForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const message = document.getElementById("customer-form-message");
+        const saveButton = customerForm.querySelector('[type="submit"]');
+        const values = Object.fromEntries(new FormData(customerForm).entries());
+
+        saveButton.disabled = true;
+        message.textContent = "Saving customer...";
+
+        try {
+            const result = await API.post("/clients/create/", values);
+
+            await loadClients();
+
+            customerForm.reset();
+            customerPanel.hidden = true;
+            message.textContent = "";
+
+            // Open new deal form with new customer selected
+            populateDealDropdowns();
+            document.getElementById("new-deal-client").value = String(result.id);
+            dealPanel.hidden = false;
+            dealPanel.scrollIntoView({ behavior: "smooth" });
+
+        } catch (error) {
+            message.textContent = "Unable to save customer: " + error.message;
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
+
+    // Save a new deal
+    dealForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const message = document.getElementById("deal-form-message");
+        const saveButton = dealForm.querySelector('[type="submit"]');
+        const values = Object.fromEntries(new FormData(dealForm).entries());
+
+        saveButton.disabled = true;
+        message.textContent = "Saving deal...";
+
+        try {
+            const result = await API.post("/deals/create/", values);
+
+            await loadDeals();
+
+            dealForm.reset();
+            dealPanel.hidden = true;
+            message.textContent = "";
+
+            // Automatically open the new deal
+            await loadDealDetails(result.id);
+
+        } catch (error) {
+            message.textContent = "Unable to save deal: " + error.message;
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
+}
+
+
+// Fill the dropdowns with data from the backend
+function populateDealDropdowns() {
+    const customerSelect = document.getElementById("new-deal-client");
+    const statusSelect = document.getElementById("new-deal-status");
+
+    customerSelect.replaceChildren(new Option("Select customer", ""));
+    statusSelect.replaceChildren(new Option("Select status", ""));
+
+    allClients.forEach(customer => {
+        customerSelect.add(
+            new Option(customer.client_name, customer.id)
+        );
+    });
+
+    allStatuses.forEach(status => {
+        statusSelect.add(
+            new Option(status.status_name, status.id)
+        );
+    });
+}
+
+
