@@ -40,6 +40,17 @@ class ApprovalRequest(models.Model):
         related_name="assigned_approvals",
     )
 
+    # Records the user who actually approves or rejects the request.
+    # This may differ from assisgned_to if an administrator makes the decision.
+    # Remains empty until a decision has been made.
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="reviewed_approvals",
+    )
+
     status = models.CharField(
         max_length=20,
         choices=Status.choices,

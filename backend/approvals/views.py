@@ -3,6 +3,8 @@ import json
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.db import transaction
+from django.utils import timezone
 from django.http import JsonResponse
 
 from deals.models import Deal
@@ -141,3 +143,118 @@ def approval_list(request):
 
     # Return the approvals the current user is allowed to view.
     return JsonResponse({"approvals": data})
+
+@login_required
+def approval_detail(request, approval_id):
+    """
+    Handle decisions on existing approval requests.
+
+    PATCH /api/approvals/<id>/
+
+    Only the assigned reviewer or an administrator can approve or reject an approval request.
+    """
+
+    # Only PATCH requests are supported by this endpoint.
+    if request.method != "PATCH":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405,
+        )
+
+    # Retrieve the approval request from the database.
+    # Return 404 if the requested approval does not exist.
+    try: 
+        approval = ApprovalRequest.objects.get(pk=approval_id)
+    except ApprovalRequest.DoesNotExist:
+        return JsonResponse(
+            {"error": "Approval request not found"},
+            status=404,
+        )
+
+    # Administrators can review any approval request.
+    # Other users must be the aassigned reviewer.
+    if not request.user.is_admin and approval.assigned_to_id != request.user.id:
+        return JsonResponse(
+            {"error": "You do not have permission to review this approval"}, 
+            status=403,
+        )
+
+    # Convert the incoming JSON request into a Python dictionary.
+    # Return an error if the JSON is invalid.
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400,
+        )
+
+    # Ensure the request contains a JSON object.
+    if not isinstance(data, dict):
+        return JsonResponse(
+            {"error": "Expected a JSON object"},
+            status=400,
+        )
+
+    # Retrieve the requested decision and reviewer comments.
+    status = data.get("status")
+    comments = data.get("reviewer_comments", "")
+
+    # Only approved and rejected ar valid reiew decisions.
+    if status not in (
+        ApprovalRequest.Status.APPROVED,
+        ApprovalRequest.Status.REJECTED,
+    ):
+        return JsonResponse(
+            {"error": "Status must be apprvoed or rejected"},
+            status=400,
+        )
+
+    # Reviewer comments must be text.
+    if not isinstance(comments, str):
+        return JsonResponse(
+            {"error": "Reviewer comments must be text"},
+            status=400,
+        )
+
+    # Use a database transaction to keep the approval update consistent.
+    with transaction.atomic():
+
+        # Lock the approval record while processing the decision.
+        # This prevents two reviewers from updating it simultaneously.
+        approval = ApprovalRequest.objects.select_for_update().get(
+            pk=approval_id
+        )
+
+        # Confirm the approval is still awaiting a decision.
+        # Completed approvals cannot be approved or rejected again.
+        if approval.status != ApprovalRequest.Status.PENDING:
+            return JsonResponse(
+                {"error": "This approval has already been reviewed"},
+                status=400,
+            )
+
+        # Record the decision and any comments provided by the reviewer.
+        approval.status = status
+        approval.reviewer_comments = comments
+
+        # Record who actually mad the decision.
+        # This may be an administrator rather than the assigned reviewer.
+        approval.reviewed_by = request.user
+
+        # Record the exact time the decision was made.
+        approval.reviewed_at = timezone.now()
+
+        # Savet the updated approval request to the database.
+        approval.save()
+
+    # Return confirmation that the decision was recorded.
+    return JsonResponse(
+        {
+            "id": approval.id,
+            "status": approval.status,
+            "reviewed_by": approval.reviewed_by.username,
+            "reviewed_at": approval.reviewed_at.isoformat(),
+            "message": "Approval decision recorded successfully",
+        }
+    )
