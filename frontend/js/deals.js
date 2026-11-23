@@ -22,9 +22,21 @@ function formatLabel(key) {
         .replace(/\b\w/g, char => char.toUpperCase());
 }
 
-function formatValue(value) {
+function formatValue(value, column) {
     if (value === null || value === undefined || value === "") {
         return "—";
+    }
+
+    if (column === "file_size" && typeof value === "number") {
+        return `${(value / 1024).toFixed(1)} KB`;
+    }
+
+    if (column === "uploaded_at") {
+        const date = new Date(value);
+
+        if (!Number.isNaN(date.getTime())) {
+            return date.toLocaleString();
+        }
     }
 
     if (typeof value === "boolean") {
@@ -604,7 +616,7 @@ function addCollectionTable(container, records) {
 
         columns.forEach(column => {
             row.appendChild(
-                createElement("td", null, formatValue(record[column]))
+                createElement("td", null, formatValue(record[column], column))
             );
         });
 
