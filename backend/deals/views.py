@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal, InvalidOperation
 from django.shortcuts import render
 from django.http import HttpRequest, JsonResponse
 from core.models import Client, Status
@@ -524,6 +525,46 @@ def deal_create(request):
         "id": deal.id,
         "deal_number": deal.deal_number
     }, status=201)
+
+@login_required
+@require_http_methods(["POST"])
+def packaging_requirement_create(request: HttpRequest, deal_id: int) -> JsonResponse:
+    """Add a validated packaging requirement to an existing deal."""
+    deal = get_object_or_404(Deal, pk=deal_id)
+    try:
+        data = json.loads(request.body)
+    except (ValueError, UnicodeDecodeError):
+        return JsonResponse({"detail": "Invalid JSON."}, status=400)
+    if not isinstance(data, dict):
+        return JsonResponse({"detail": "Expected packaging information."}, status=400)
+
+    quantity = data.get("quantity")
+    if quantity not in (None, ""):
+        try:
+            quantity = Decimal(str(quantity))
+        except (InvalidOperation, ValueError):
+            return JsonResponse({"detail": "Quantity must be a valid number."}, status=400)
+        if not quantity.is_finite() or quantity < 0:
+            return JsonResponse({"detail": "Quantity must be a finite, non-negative number."}, status=400)
+    else:
+        quantity = None
+
+    requirement = PackagingRequirement(
+        deal=deal,
+        item_type=str(data.get("item_type") or "").strip(),
+        quantity=quantity,
+        specification=str(data.get("specification") or "").strip(),
+        unit=str(data.get("unit") or "").strip(),
+        uom=str(data.get("uom") or "").strip(),
+        notes=str(data.get("notes") or "").strip(),
+    )
+    try:
+        requirement.full_clean()
+        requirement.save()
+    except ValidationError as error:
+        return JsonResponse({"detail": "; ".join(error.messages)}, status=400)
+    return JsonResponse({"message": "Packaging requirement created.", "id": requirement.pk}, status=201)
+
 
 def recent_activity(request: HttpRequest) -> JsonResponse:
     """GET /api/deals/recent-activity/ - latest events across all deals."""
