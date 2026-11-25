@@ -375,6 +375,8 @@ function renderDealDetails(deal) {
 
         if (section.type === "details") {
             addDealInformation(panel, deal);
+        } else if (section.id === "packaging") {
+            addPackagingRequirements(panel, deal);
         } else if (section.id === "customer-pos") {
             addCustomerOrders(panel, deal);
         } else {
@@ -628,6 +630,72 @@ function addCollectionTable(container, records) {
     container.appendChild(wrapper);
 }
 
+
+function addPackagingRequirements(panel, deal) {
+    const heading = createElement("div", "order-heading");
+    heading.appendChild(createElement("h3", null, "Packaging Requirements"));
+    const addButton = createElement("button", null, "+ Add Packaging Requirement");
+    addButton.type = "button";
+    heading.appendChild(addButton);
+    panel.appendChild(heading);
+
+    const form = document.createElement("form");
+    form.className = "order-form";
+    form.hidden = true;
+    form.innerHTML = `
+        <label>Item Type *
+            <select name="item_type" required>
+                <option value="">Select packaging type</option>
+                <option value="can">Can</option>
+                <option value="end">End</option>
+                <option value="carton">Carton</option>
+                <option value="tray">Tray</option>
+            </select>
+        </label>
+        <label>Quantity
+            <input name="quantity" type="number" min="0" step="0.001">
+        </label>
+        <label>Unit<input name="unit" maxlength="50" placeholder="e.g. each"></label>
+        <label>Unit of Measure<input name="uom" maxlength="50" placeholder="e.g. cases"></label>
+        <label class="order-wide">Specification
+            <textarea name="specification" rows="2"></textarea>
+        </label>
+        <label class="order-wide">Notes<textarea name="notes" rows="2"></textarea></label>
+        <div class="order-actions">
+            <button type="submit">Save Packaging Requirement</button>
+            <button type="button" class="packaging-cancel">Cancel</button>
+        </div>
+        <p class="order-feedback" role="status" aria-live="polite"></p>
+    `;
+    panel.appendChild(form);
+    const feedback = form.querySelector(".order-feedback");
+    addButton.addEventListener("click", () => {
+        form.hidden = false;
+        form.elements.item_type.focus();
+    });
+    form.querySelector(".packaging-cancel").addEventListener("click", () => {
+        form.reset();
+        feedback.textContent = "";
+        form.hidden = true;
+    });
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const submit = form.querySelector('[type="submit"]');
+        if (submit.disabled) return;
+        submit.disabled = true;
+        feedback.textContent = "Saving packaging requirement...";
+        try {
+            const values = Object.fromEntries(new FormData(form).entries());
+            await API.post(`/deals/${deal.id}/packaging-requirements/`, values);
+            await refreshDealKeepingTab(deal.id, "packaging");
+        } catch (error) {
+            feedback.textContent = "Could not save packaging requirement: " + error.message;
+        } finally {
+            submit.disabled = false;
+        }
+    });
+    addCollectionTable(panel, deal.packaging_requirements ?? []);
+}
 
 const orderStatuses = [
     "Draft",
